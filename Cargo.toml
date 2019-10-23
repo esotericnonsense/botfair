@@ -1,0 +1,12 @@
+[package]
+name = "schroedinger"
+version = "0.1.0"
+authors = ["Daniel Edgecumbe <git@esotericnonsense.com>"]
+edition = "2018"
+
+[dependencies]
+log = "0.4"
+env_logger = "0.7"
+reqwest = { "version" = "0.9", "features" = ["rustls-tls"] }
+rand = "0.7"
+serde = "1"
