@@ -24,7 +24,6 @@ use std::fs;
 
 const CERTLOGIN_URI: &str =
     "https://identitysso-cert.betfair.com/api/certlogin";
-const PEMFILE: &str = "/home/esotericnonsense/betfair/client-2048.pem";
 const PFXFILE: &str = "/home/esotericnonsense/betfair/identity.pfx";
 //const APPKEYFILE: &str = "/home/esotericnonsense/betfair/betfair-app-key";
 const USERFILE: &str = "/home/esotericnonsense/betfair/betfair-user";
@@ -56,51 +55,43 @@ struct LoginRequestForm {
 }
 
 #[derive(Debug, Deserialize)]
+#[allow(non_snake_case)]
 struct LoginResponse {
-    sessiontoken: Option<String>,
-    loginstatus: String, // TODO enum this
+    sessionToken: Option<String>,
+    loginStatus: String, // TODO enum this
 }
 
 fn get_session_token() -> Result<String, AnyError> {
-    let username = fs::read_to_string(USERFILE)?;
-    let password = fs::read_to_string(PASSFILE)?;
+    let username = fs::read_to_string(USERFILE)?.replace("\n", "");
+    let password = fs::read_to_string(PASSFILE)?.replace("\n", "");
 
-    info!("hmm");
-    //    let ident = Identity::from_pem(std::fs::read(PEMFILE)?.as_slice())?;
     let ident =
         Identity::from_pkcs12_der(std::fs::read(PFXFILE)?.as_slice(), "")?;
-    info!("hmmm");
     let cl: Client = Client::builder().identity(ident).build()?;
 
     let appheader = format!("{}", rand::random::<u128>());
 
-    //let login_response: LoginResponse = cl
-    let login_response = cl
+    let login_request_form = LoginRequestForm { username, password };
+    info!("{:?}", login_request_form);
+    let login_response: LoginResponse = cl
         .post(CERTLOGIN_URI)
         .header("X-Application", appheader)
-        .form(&LoginRequestForm { username, password })
+        .form(&login_request_form)
         .send()?
-        .text()?;
+        .json()?;
 
-    info!("{}", login_response);
-    //     .json()?;
-    // info!("hmmmmm");
+    info!("{:?}", login_response);
 
-    // format!("{:?}", login_response);
-
-    // match login_response.sessiontoken {
-    //     Some(token) => Ok(token),
-    //     None => Err(AnyError::Other),
-    // }
-    Err(AnyError::Other)
+    match login_response.sessionToken {
+        Some(token) => Ok(token),
+        None => Err(AnyError::Other),
+    }
 }
 
 fn main() -> Result<(), AnyError> {
     env_logger::Builder::from_default_env()
         .target(env_logger::Target::Stderr)
         .init();
-
-    //    let appkey = std::fs::read_to_string(APPKEYFILE)?;
 
     match get_session_token() {
         Ok(x) => {
