@@ -1,10 +1,78 @@
 #!/usr/bin/env python3
 
-from typing import Optional, Set
+from typing import Optional, Set, List, Dict
 from xml.etree.ElementTree import Element, parse
 from enum import Enum, auto
+from dataclasses import dataclass
+from dataclasses_json import DataClassJsonMixin
+from collections import defaultdict
 
 import string
+
+
+@dataclass
+class Value(DataClassJsonMixin):
+    """A value as per BF API"""
+
+    name: str
+    _id: Optional[int]
+    description: Optional[str]
+
+
+@dataclass
+class Param(DataClassJsonMixin):
+    """A parameter as per the BF API"""
+
+    name: str
+    _type: str
+    mandatory: bool
+    values: Optional[List[Value]]
+
+
+@dataclass
+class Operation(DataClassJsonMixin):
+    """An operation as per the BF API"""
+
+    name: str
+    since: str
+    description: Optional[str]
+    params: List[Param]
+
+
+@dataclass
+class BfEnum(DataClassJsonMixin):
+    """An enum as per the BF API"""
+
+    name: str
+    members: List[str]
+
+
+@dataclass
+class ExceptionType(DataClassJsonMixin):
+    """An exception type as per the BF API"""
+
+    name: str
+    prefix: str
+    params: List[Param]
+
+
+@dataclass
+class SimpleType(DataClassJsonMixin):
+    """An exception type as per the BF API"""
+
+    name: str
+    _type: str
+    description: Optional[str]
+    values: Optional[List[Value]]
+
+
+@dataclass
+class DataType(DataClassJsonMixin):
+    """An exception type as per the BF API"""
+
+    name: str
+    description: Optional[str]
+    params: List[Param]
 
 
 class ParentType(Enum):
@@ -15,27 +83,25 @@ class ParentType(Enum):
 
 
 OBSERVED_TYPES: Set[str] = set()
-OBSERVED_ENUMS: Set[str] = set()
+OBSERVED_ENUMS: Dict[str, List[str]] = defaultdict(list)
 
 ALLOWABLE = string.ascii_letters + string.digits
 
 
-def parse_type(_type: str) -> None:
+def parse_type(_type: str) -> str:
     _type = _type.replace(" ", "")  # sanity
 
     if _type.startswith("list("):
         inner_type = _type.replace(")", "", 1).split("(", maxsplit=1)[1]
         assert all(x in ALLOWABLE for x in inner_type)
-        OBSERVED_TYPES.add(f"[{inner_type}]")
-        return
+        _type = f"List[{inner_type}]"
 
-    if _type.startswith("set("):
+    elif _type.startswith("set("):
         inner_type = _type.replace(")", "", 1).split("(", maxsplit=1)[1]
         assert all(x in ALLOWABLE for x in inner_type)
-        OBSERVED_TYPES.add(f"Set({inner_type})")
-        return
+        _type = f"Set[{inner_type}]"
 
-    if _type.startswith("map("):
+    elif _type.startswith("map("):
         inner_type_1, inner_type_2 = (
             _type.replace(")", "", 1)
             .split("(", maxsplit=1)[1]
@@ -43,10 +109,10 @@ def parse_type(_type: str) -> None:
         )
         assert all(x in ALLOWABLE for x in inner_type_1), inner_type_1
         assert all(x in ALLOWABLE for x in inner_type_2), inner_type_2
-        OBSERVED_TYPES.add(f"Map({inner_type_1}, {inner_type_2})")
-        return
+        _type = f"Map[{inner_type_1}, {inner_type_2}]"
 
     OBSERVED_TYPES.add(_type)
+    return _type
 
 
 def strip_string(s: Optional[str]) -> Optional[str]:
@@ -56,12 +122,15 @@ def strip_string(s: Optional[str]) -> Optional[str]:
     return " ".join([x.strip() for x in s.split("\n")]).strip()
 
 
-def parse_description(el: Element) -> None:
+def parse_description(el: Element) -> Optional[str]:
     assert el.tag == "description"
     assert not el.attrib
     assert len(el) == 0
-    if el.text is not None:  # nullable string
-        print(strip_string(el.text))
+
+    if el.text is None:
+        return None
+
+    return strip_string(el.text)
 
 
 def parse_exceptions(el: Element) -> None:
@@ -73,29 +142,28 @@ def parse_exceptions(el: Element) -> None:
         if child.tag == "exception":
             _type = child.attrib.pop("type")
             parse_type(_type)
-            print(f"exception {_type}")
+            # print(f"exception {_type}")
             assert not child.attrib
             assert not strip_string(child.text)
             assert len(child) == 1
             parse_description(child[0])
             continue
 
-        print(child.tag)
+        # print(child.tag)
         raise NotImplementedError
 
 
-def parse_value(el: Element, enum: str, parent: ParentType) -> None:
+def parse_value(el: Element, parent: ParentType) -> Value:
     name = el.attrib.pop("name")
-    OBSERVED_ENUMS.add(f"{enum}.{name}")
 
+    _id: Optional[int]
     if parent == ParentType.EXCEPTION_TYPE:
         _id_str: str = el.attrib.pop("id")
         assert _id_str.isdigit()
         _id = int(_id_str)
-        print(f"value {_id} {name}")
 
     elif parent == ParentType.SIMPLE_TYPE:
-        print(f"value {name}")
+        _id = None
 
     else:
         raise NotImplementedError(f"value: {parent}")
@@ -104,22 +172,27 @@ def parse_value(el: Element, enum: str, parent: ParentType) -> None:
     assert not strip_string(el.text)
 
     assert len(el) == 1
-    parse_description(el[0])
+    description = parse_description(el[0])
+
+    return Value(name=name, _id=_id, description=description)
 
 
-def parse_validValues(el: Element, enum: str, parent: ParentType) -> None:
+def parse_validValues(el: Element, parent: ParentType) -> List[Value]:
     assert not el.attrib
     assert not strip_string(el.text)
 
+    values: List[Value] = []
     for child in el:  # type: Element
         if child.tag == "value":
-            parse_value(child, enum=enum, parent=parent)
+            values.append(parse_value(child, parent=parent))
             continue
 
         raise NotImplementedError(f"validValues child {child.tag}")
 
+    return values
 
-def parse_parameter(el: Element, parent: ParentType) -> None:
+
+def parse_parameter(el: Element, parent: ParentType) -> Param:
     mandatory: bool
     try:
         mandatory_str = el.attrib.pop("mandatory")
@@ -130,14 +203,15 @@ def parse_parameter(el: Element, parent: ParentType) -> None:
 
     name = el.attrib.pop("name")
     _type = el.attrib.pop("type")
-    parse_type(_type)
-    print(f"param {name}: {_type} (mandatory={mandatory})")
+    _type = parse_type(_type)
+    # print(f"param {name}: {_type} (mandatory={mandatory})")
 
     assert not el.attrib
     assert not strip_string(el.text)
 
     description_observed = False  # should be unique
 
+    values: Optional[List[Value]] = None
     for child in el:  # type: Element
         if child.tag == "description":
             assert not description_observed
@@ -145,38 +219,40 @@ def parse_parameter(el: Element, parent: ParentType) -> None:
             parse_description(child)
             continue
         if parent == ParentType.EXCEPTION_TYPE and child.tag == "validValues":
-            parse_validValues(
-                child, enum=name, parent=ParentType.EXCEPTION_TYPE
-            )
+            values = parse_validValues(child, parent=ParentType.EXCEPTION_TYPE)
             continue
 
         raise NotImplementedError(f"parameter {parent} {child.tag}")
 
+    return Param(name=name, _type=_type, mandatory=mandatory, values=values)
 
-def parse_request(el: Element) -> None:
+
+def parse_request(el: Element) -> List[Param]:
     assert el.tag == "request"
     assert not el.attrib
     assert not strip_string(el.text)
 
+    params: List[Param] = []
     for child in el:  # type: Element
         if child.tag == "parameter":
-            parse_parameter(child, parent=ParentType.OPERATION)
+            param = parse_parameter(child, parent=ParentType.OPERATION)
+            params.append(param)
             continue
 
         raise NotImplementedError
 
+    return params
 
-def parse_parameters(el: Element) -> None:
-    # operation
 
+def parse_parameters(el: Element) -> List[Param]:
     assert el.tag == "parameters"
     assert not el.attrib
     assert not strip_string(el.text)
 
     for child in el:  # type: Element
         if child.tag == "request":
-            print("request")
-            parse_request(child)
+            # print("request")
+            params = parse_request(child)
             continue
         if child.tag == "simpleResponse":
             _type = child.attrib.pop("type")
@@ -187,147 +263,165 @@ def parse_parameters(el: Element) -> None:
             parse_description(child[0])
 
             parse_type(_type)
-            print(f"returns {_type}")
+            # print(f"returns {_type}")
             continue
         if child.tag == "exceptions":
-            print("exceptions")
+            # print("exceptions")
             parse_exceptions(child)
             continue
 
         raise NotImplementedError
 
+    return params
 
-def parse_operation(el: Element) -> None:
+
+def parse_operation(el: Element) -> Operation:
     assert el.tag == "operation"
     name = el.attrib.pop("name")
     since = el.attrib.pop("since")
     assert not el.attrib
     assert not strip_string(el.text)
-    print("===")
-    print(name)
+    # print("===")
+    # print(name)
 
     for child in el:  # type: Element
         if child.tag == "description":
             assert not child.attrib
             assert len(child) == 0
-            print(strip_string(child.text))
-            print()
+            description = strip_string(child.text)
             continue
         if child.tag == "parameters":
-            parse_parameters(child)
+            params = parse_parameters(child)
             continue
 
-        print(OBSERVED_TYPES)
+        # print(OBSERVED_TYPES)
         raise NotImplementedError
 
+    return Operation(
+        name=name, since=since, description=description, params=params
+    )
 
-def parse_dataType(el: Element) -> None:
+
+def parse_dataType(el: Element) -> DataType:
     assert el.tag == "dataType"
     name = el.attrib.pop("name")
     assert not el.attrib
     assert not strip_string(el.text)
-    print("===")
-    print(name)
 
-    description_observed = False  # should be unique
-
+    description: Optional[str] = None
+    params: List[Param] = []
     for child in el:  # type: Element
         if child.tag == "description":
-            assert not description_observed
-            description_observed = True
-            parse_description(child)
+            assert description is None
+            description = parse_description(child)
             continue
         if child.tag == "parameter":
-            parse_parameter(child, parent=ParentType.DATA_TYPE)
+            params.append(parse_parameter(child, parent=ParentType.DATA_TYPE))
             continue
 
-        print(child.tag)
+        # print(child.tag)
         raise NotImplementedError
 
+    return DataType(name=name, description=description, params=params)
 
-def parse_exceptionType(el: Element) -> None:
+
+def parse_exceptionType(el: Element) -> ExceptionType:
     assert el.tag == "exceptionType"
     name = el.attrib.pop("name")
     prefix = el.attrib.pop("prefix")
     assert not el.attrib
     assert not strip_string(el.text)
-    print("===")
-    print(name, prefix)
 
-    description_observed = False  # should be unique
-
-    child: Element
-    for child in el:
+    description: Optional[str] = None
+    params: List[Param] = []
+    for child in el:  # type: Element
         if child.tag == "description":
-            assert not description_observed
-            description_observed = True
-            parse_description(child)
+            assert description is None
+            description = parse_description(child)
             continue
         if child.tag == "parameter":
-            parse_parameter(child, parent=ParentType.EXCEPTION_TYPE)
+            params.append(
+                parse_parameter(child, parent=ParentType.EXCEPTION_TYPE)
+            )
             continue
 
-        print(child.tag)
         raise NotImplementedError
 
+    return ExceptionType(name=name, prefix=prefix, params=params)
 
-def parse_simpleType(el: Element) -> None:
+
+def parse_simpleType(el: Element) -> SimpleType:
     assert el.tag == "simpleType"
     name = el.attrib.pop("name")
     _type = el.attrib.pop("type")
     assert not el.attrib
     assert not strip_string(el.text)
-    print("===")
-    print(name, _type)
+    # print("===")
+    # print(name, _type)
 
-    description_observed = False  # should be unique
-
+    values: Optional[List[Value]] = None
+    description: Optional[str] = None
     for child in el:  # type: Element
         if child.tag == "description":
-            assert not description_observed
-            description_observed = True
-            parse_description(child)
+            assert description is None
+            description = parse_description(child)
             continue
         if child.tag == "validValues":
-            parse_validValues(child, enum=name, parent=ParentType.SIMPLE_TYPE)
+            assert values is None
+            values = parse_validValues(child, parent=ParentType.SIMPLE_TYPE)
             continue
 
-        print(child.tag)
         raise NotImplementedError
+
+    return SimpleType(
+        name=name, _type=_type, values=values, description=description
+    )
 
 
 def main() -> None:
     tree = parse("SportsAPING.xml")
     root: Element = tree.getroot()
-
     assert not strip_string(root.text)
 
+    description: Optional[str] = None
+    operations: List[Operation] = []
+    data_types: List[DataType] = []
+    exception_types: List[ExceptionType] = []
+    simple_types: List[SimpleType] = []
     for child in root:  # type: Element
         if child.tag == "description":
-            assert not child.attrib
-            # TODO: do we even care about this really
-            desc = strip_string(child.text)
+            assert description is None
+            description = parse_description(child)
             continue
         if child.tag == "operation":
-            parse_operation(child)
+            operations.append(parse_operation(child))
             continue
         if child.tag == "dataType":
-            parse_dataType(child)
+            data_types.append(parse_dataType(child))
             continue
         if child.tag == "exceptionType":
-            parse_exceptionType(child)
+            exception_types.append(parse_exceptionType(child))
             continue
         if child.tag == "simpleType":
-            parse_simpleType(child)
+            simple_types.append(parse_simpleType(child))
             continue
 
         raise NotImplementedError(f"root {child.tag}")
 
-    for x in sorted(list(OBSERVED_TYPES)):
-        print(x)
+    # for x in sorted(list(OBSERVED_TYPES)):
+    #     print(x)
 
-    for x in sorted(list(OBSERVED_ENUMS)):
-        print(x)
+    # for k, v in OBSERVED_ENUMS.items():
+    #     print(k)
+    #     for x in v:
+    #         print(f"    {x}")
+
+    # x = Operation.schema().dumps(operations, many=True)
+    # x = DataType.schema().dumps(data_types, many=True)
+    # x = ExceptionType.schema().dumps(exception_types, many=True)
+    # x = SimpleType.schema().dumps(simple_types, many=True)
+
+    # print(x)
 
 
 if __name__ == "__main__":
