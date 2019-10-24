@@ -6,21 +6,28 @@ from xml.etree.ElementTree import Element
 
 OBSERVED_TYPES = set()
 
+def strip_string(s: str):
+    return " ".join([x.strip() for x in s.split("\n")]).strip()
+
 def parse_description(el: Element):
     assert el.tag == "description"
     assert not el.attrib
     assert len(el) == 0
-    print(f"DESC {el.text.strip()}")
+    print(strip_string(el.text))
 
 def parse_exceptions(el: Element):
     assert el.tag == "exceptions"
     assert not el.attrib
-    assert not el.text.strip()
+    assert not strip_string(el.text)
     for child in el:
         if child.tag == "exception":
-            # type
-            # description
-            raise NotImplementedError
+            _type = child.attrib.pop("type")
+            OBSERVED_TYPES.add(_type)
+            print(f"exception {_type}")
+            assert not child.attrib
+            assert not strip_string(child.text)
+            assert len(child) == 1
+            parse_description(child[0])
             continue
 
         print(child.tag)
@@ -29,7 +36,7 @@ def parse_exceptions(el: Element):
 def parse_request(el: Element):
     assert el.tag == "request"
     assert not el.attrib
-    assert not el.text.strip()
+    assert not strip_string(el.text)
     for child in el:
         if child.tag == "parameter":
             try:
@@ -41,14 +48,13 @@ def parse_request(el: Element):
 
             name = child.attrib.pop("name")
             _type = child.attrib.pop("type")
+            OBSERVED_TYPES.add(_type)
             print(f"param {name}: {_type} (mandatory={mandatory})")
 
             assert not child.attrib
-            assert not child.text.strip()
+            assert not strip_string(child.text)
             assert len(child) == 1
-            parse_description(child[0].tag)
-
-            OBSERVED_TYPES.add(_type) #TODO fix
+            parse_description(child[0])
             continue
 
         raise NotImplementedError
@@ -65,10 +71,10 @@ def parse_parameters(el: Element):
         if child.tag == "simpleResponse":
             _type = child.attrib.pop("type")
             assert not child.attrib
-            assert not child.text.strip()
+            assert not strip_string(child.text)
 
             assert len(child) == 1
-            parse_description(child[0].tag)
+            parse_description(child[0])
 
             OBSERVED_TYPES.add(_type)
             print(f"returns {_type}")
@@ -92,19 +98,21 @@ def parse_operation(el: Element):
         if child.tag == "description":
             assert not child.attrib
             assert len(child) == 0
-            #print("DESC", child.text.strip())
+            print(strip_string(child.text))
+            print()
             continue
         if child.tag == "parameters":
             parameters = parse_parameters(child)
             continue
 
+        print(OBSERVED_TYPES)
         raise NotImplementedError
 
 
 for child in root:
     if child.tag == "description":
         assert not child.attrib
-        print(child.text.strip())
+        print(strip_string(child.text))
         continue
     if child.tag == "operation":
         parse_operation(child)
