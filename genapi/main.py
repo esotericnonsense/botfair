@@ -2,11 +2,9 @@
 
 import xml.etree.ElementTree as ET
 from typing import Optional, Set
-
 from xml.etree.ElementTree import Element
-
-
 from enum import Enum, auto
+
 class ParentType(Enum):
     OPERATION = auto()
     DATA_TYPE = auto()
@@ -34,8 +32,7 @@ def parse_exceptions(el: Element) -> None:
     assert not el.attrib
     assert not strip_string(el.text)
 
-    child: Element
-    for child in el:
+    for child in el: #type: Element
         if child.tag == "exception":
             _type = child.attrib.pop("type")
             OBSERVED_TYPES.add(_type)
@@ -75,8 +72,7 @@ def parse_validValues(el: Element, _parent: ParentType) -> None:
     assert not el.attrib
     assert not strip_string(el.text)
 
-    child: Element
-    for child in el:
+    for child in el: #type: Element
         if child.tag == "value":
             parse_value(child, _parent=_parent)
             continue
@@ -102,8 +98,7 @@ def parse_parameter(el: Element, _parent: ParentType) -> None:
 
     description_observed = False  # should be unique
 
-    child: Element
-    for child in el:
+    for child in el: #type: Element
         if child.tag == "description":
             assert not description_observed
             description_observed = True
@@ -119,7 +114,8 @@ def parse_request(el: Element) -> None:
     assert el.tag == "request"
     assert not el.attrib
     assert not strip_string(el.text)
-    for child in el:
+
+    for child in el: #type: Element
         if child.tag == "parameter":
             parse_parameter(child, _parent=ParentType.OPERATION)
             continue
@@ -134,8 +130,7 @@ def parse_parameters(el: Element) -> None:
     assert not el.attrib
     assert not strip_string(el.text)
 
-    child: Element
-    for child in el:
+    for child in el: #type: Element
         if child.tag == "request":
             print("request")
             parse_request(child)
@@ -167,8 +162,7 @@ def parse_operation(el: Element) -> None:
     print("===")
     print(name)
 
-    child: Element
-    for child in el:
+    for child in el: #type: Element
         if child.tag == "description":
             assert not child.attrib
             assert len(child) == 0
@@ -192,8 +186,7 @@ def parse_dataType(el: Element) -> None:
 
     description_observed = False  # should be unique
 
-    child: Element
-    for child in el:
+    for child in el: #type: Element
         if child.tag == "description":
             assert not description_observed
             description_observed = True
@@ -242,8 +235,7 @@ def parse_simpleType(el: Element) -> None:
 
     description_observed = False  # should be unique
 
-    child: Element
-    for child in el:
+    for child in el: #type: Element
         if child.tag == "description":
             assert not description_observed
             description_observed = True
@@ -263,8 +255,7 @@ def main() -> None:
     tree = ET.parse("SportsAPING.xml")
     root: Element = tree.getroot()
 
-    child: Element
-    for child in root:
+    for child in root: #type: Element
         if child.tag == "description":
             assert not child.attrib
             print(strip_string(child.text))
@@ -283,6 +274,9 @@ def main() -> None:
             continue
 
         raise NotImplementedError(f"root {child.tag}")
+
+    print(OBSERVED_TYPES)
+    print(OBSERVED_ENUMS)
 
     print("done")
 
