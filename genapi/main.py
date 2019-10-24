@@ -300,10 +300,13 @@ def main() -> None:
     tree = parse("SportsAPING.xml")
     root: Element = tree.getroot()
 
+    assert not strip_string(root.text)
+
     for child in root:  # type: Element
         if child.tag == "description":
             assert not child.attrib
-            print(strip_string(child.text))
+            # TODO: do we even care about this really
+            desc = strip_string(child.text)
             continue
         if child.tag == "operation":
             parse_operation(child)
