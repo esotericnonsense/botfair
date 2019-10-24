@@ -5,6 +5,8 @@ from typing import Optional, Set
 from xml.etree.ElementTree import Element
 from enum import Enum, auto
 
+import string
+
 class ParentType(Enum):
     OPERATION = auto()
     DATA_TYPE = auto()
@@ -13,6 +15,35 @@ class ParentType(Enum):
 
 OBSERVED_TYPES: Set[str] = set()
 OBSERVED_ENUMS: Set[str] = set()
+
+ALLOWABLE = string.ascii_letters + string.digits
+
+def parse_type(_type: str) -> None:
+    _type = _type.replace(" ", "") # sanity
+
+    if _type.startswith("list("):
+        inner_type = _type.replace(")", "", 1).split("(", maxsplit=1)[1]
+        assert all(x in ALLOWABLE for x in inner_type)
+        OBSERVED_TYPES.add(f"[{inner_type}]")
+        return
+
+    if _type.startswith("set("):
+        inner_type = _type.replace(")", "", 1).split("(", maxsplit=1)[1]
+        assert all(x in ALLOWABLE for x in inner_type)
+        OBSERVED_TYPES.add(f"Set({inner_type})")
+        return
+
+    if _type.startswith("map("):
+        inner_type_1, inner_type_2 = _type \
+            .replace(")", "", 1) \
+            .split("(", maxsplit=1)[1] \
+            .split(",", maxsplit=1)
+        assert all(x in ALLOWABLE for x in inner_type_1), inner_type_1
+        assert all(x in ALLOWABLE for x in inner_type_2), inner_type_2
+        OBSERVED_TYPES.add(f"Map({inner_type_1}, {inner_type_2})")
+        return
+
+    OBSERVED_TYPES.add(_type)
 
 def strip_string(s: Optional[str]) -> Optional[str]:
     if s is None:
@@ -35,7 +66,7 @@ def parse_exceptions(el: Element) -> None:
     for child in el: #type: Element
         if child.tag == "exception":
             _type = child.attrib.pop("type")
-            OBSERVED_TYPES.add(_type)
+            parse_type(_type)
             print(f"exception {_type}")
             assert not child.attrib
             assert not strip_string(child.text)
@@ -90,7 +121,7 @@ def parse_parameter(el: Element, _parent: ParentType) -> None:
 
     name = el.attrib.pop("name")
     _type = el.attrib.pop("type")
-    OBSERVED_TYPES.add(_type)
+    parse_type(_type)
     print(f"param {name}: {_type} (mandatory={mandatory})")
 
     assert not el.attrib
@@ -143,7 +174,7 @@ def parse_parameters(el: Element) -> None:
             assert len(child) == 1
             parse_description(child[0])
 
-            OBSERVED_TYPES.add(_type)
+            parse_type(_type)
             print(f"returns {_type}")
             continue
         if child.tag == "exceptions":
@@ -275,8 +306,11 @@ def main() -> None:
 
         raise NotImplementedError(f"root {child.tag}")
 
-    print(OBSERVED_TYPES)
-    print(OBSERVED_ENUMS)
+    for x in sorted(list(OBSERVED_TYPES)):
+        print(x)
+
+    for x in sorted(list(OBSERVED_ENUMS)):
+        print(x)
 
     print("done")
 
