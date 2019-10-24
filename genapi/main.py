@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 
-import xml.etree.ElementTree as ET
 from typing import Optional, Set
-from xml.etree.ElementTree import Element
+from xml.etree.ElementTree import Element, parse
 from enum import Enum, auto
 
 import string
@@ -280,7 +279,7 @@ def parse_simpleType(el: Element) -> None:
         raise NotImplementedError
 
 def main() -> None:
-    tree = ET.parse("SportsAPING.xml")
+    tree = parse("SportsAPING.xml")
     root: Element = tree.getroot()
 
     for child in root: #type: Element
