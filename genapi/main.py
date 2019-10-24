@@ -77,9 +77,9 @@ def parse_exceptions(el: Element) -> None:
         print(child.tag)
         raise NotImplementedError
 
-def parse_value(el: Element, parent: ParentType) -> None:
+def parse_value(el: Element, enum: str, parent: ParentType) -> None:
     name = el.attrib.pop("name")
-    OBSERVED_ENUMS.add(name)
+    OBSERVED_ENUMS.add(f"{enum}.{name}")
 
     if parent == ParentType.EXCEPTION_TYPE:
         _id_str: str = el.attrib.pop("id")
@@ -99,13 +99,13 @@ def parse_value(el: Element, parent: ParentType) -> None:
     assert len(el) == 1
     parse_description(el[0])
 
-def parse_validValues(el: Element, parent: ParentType) -> None:
+def parse_validValues(el: Element, enum: str, parent: ParentType) -> None:
     assert not el.attrib
     assert not strip_string(el.text)
 
     for child in el: #type: Element
         if child.tag == "value":
-            parse_value(child, parent=parent)
+            parse_value(child, enum=enum, parent=parent)
             continue
 
         raise NotImplementedError(f"validValues child {child.tag}")
@@ -136,7 +136,7 @@ def parse_parameter(el: Element, parent: ParentType) -> None:
             parse_description(child)
             continue
         if parent == ParentType.EXCEPTION_TYPE and child.tag == "validValues":
-            parse_validValues(child, parent=ParentType.EXCEPTION_TYPE)
+            parse_validValues(child, enum=name, parent=ParentType.EXCEPTION_TYPE)
             continue
 
         raise NotImplementedError(f"parameter {parent} {child.tag}")
@@ -273,7 +273,7 @@ def parse_simpleType(el: Element) -> None:
             parse_description(child)
             continue
         if child.tag == "validValues":
-            parse_validValues(child, parent=ParentType.SIMPLE_TYPE)
+            parse_validValues(child, enum=name, parent=ParentType.SIMPLE_TYPE)
             continue
 
         print(child.tag)
@@ -308,8 +308,6 @@ def main() -> None:
 
     for x in sorted(list(OBSERVED_ENUMS)):
         print(x)
-
-    print("done")
 
 if __name__ == "__main__":
     main()
