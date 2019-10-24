@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from typing import Optional, Set, List, Dict
+from typing import Optional, Set, List, Dict, Tuple
 from xml.etree.ElementTree import Element, parse
 from enum import Enum, auto
 from dataclasses import dataclass
@@ -30,6 +30,22 @@ class Param(DataClassJsonMixin):
 
 
 @dataclass
+class SimpleResponse(DataClassJsonMixin):
+    """A simple response"""
+
+    _type: str
+    description: Optional[str]
+
+
+@dataclass
+class ExceptionResponse(DataClassJsonMixin):
+    """A simple exception response"""
+
+    _type: str
+    description: Optional[str]
+
+
+@dataclass
 class Operation(DataClassJsonMixin):
     """An operation as per the BF API"""
 
@@ -37,6 +53,8 @@ class Operation(DataClassJsonMixin):
     since: str
     description: Optional[str]
     params: List[Param]
+    simple_response: SimpleResponse
+    exceptions: List[ExceptionResponse]
 
 
 @dataclass
@@ -133,24 +151,29 @@ def parse_description(el: Element) -> Optional[str]:
     return strip_string(el.text)
 
 
-def parse_exceptions(el: Element) -> None:
+def parse_exceptions(el: Element) -> List[ExceptionResponse]:
     assert el.tag == "exceptions"
     assert not el.attrib
     assert not strip_string(el.text)
 
+    exceptions: List[ExceptionResponse] = []
     for child in el:  # type: Element
         if child.tag == "exception":
             _type = child.attrib.pop("type")
-            parse_type(_type)
-            # print(f"exception {_type}")
             assert not child.attrib
             assert not strip_string(child.text)
             assert len(child) == 1
-            parse_description(child[0])
+
+            _type = parse_type(_type)
+            description = parse_description(child[0])
+            exceptions.append(
+                ExceptionResponse(_type=_type, description=description)
+            )
             continue
 
-        # print(child.tag)
         raise NotImplementedError
+
+    return exceptions
 
 
 def parse_value(el: Element, parent: ParentType) -> Value:
@@ -244,7 +267,9 @@ def parse_request(el: Element) -> List[Param]:
     return params
 
 
-def parse_parameters(el: Element) -> List[Param]:
+def parse_parameters(
+    el: Element
+) -> Tuple[List[Param], SimpleResponse, List[ExceptionResponse]]:
     assert el.tag == "parameters"
     assert not el.attrib
     assert not strip_string(el.text)
@@ -260,19 +285,19 @@ def parse_parameters(el: Element) -> List[Param]:
             assert not strip_string(child.text)
 
             assert len(child) == 1
-            parse_description(child[0])
+            description = parse_description(child[0])
 
-            parse_type(_type)
-            # print(f"returns {_type}")
+            simple_response = SimpleResponse(
+                _type=parse_type(_type), description=description
+            )
             continue
         if child.tag == "exceptions":
-            # print("exceptions")
-            parse_exceptions(child)
+            exceptions = parse_exceptions(child)
             continue
 
         raise NotImplementedError
 
-    return params
+    return (params, simple_response, exceptions)
 
 
 def parse_operation(el: Element) -> Operation:
@@ -291,14 +316,19 @@ def parse_operation(el: Element) -> Operation:
             description = strip_string(child.text)
             continue
         if child.tag == "parameters":
-            params = parse_parameters(child)
+            params, simple_response, exceptions = parse_parameters(child)
             continue
 
         # print(OBSERVED_TYPES)
         raise NotImplementedError
 
     return Operation(
-        name=name, since=since, description=description, params=params
+        name=name,
+        since=since,
+        description=description,
+        params=params,
+        simple_response=simple_response,
+        exceptions=exceptions,
     )
 
 
@@ -416,12 +446,12 @@ def main() -> None:
     #     for x in v:
     #         print(f"    {x}")
 
-    # x = Operation.schema().dumps(operations, many=True)
+    x = Operation.schema().dumps(operations, many=True)
     # x = DataType.schema().dumps(data_types, many=True)
     # x = ExceptionType.schema().dumps(exception_types, many=True)
     # x = SimpleType.schema().dumps(simple_types, many=True)
 
-    # print(x)
+    print(x)
 
 
 if __name__ == "__main__":
