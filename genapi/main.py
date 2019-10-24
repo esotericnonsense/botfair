@@ -1,5 +1,7 @@
+#!/usr/bin/env python3
+
 import xml.etree.ElementTree as ET
-from typing import Optional
+from typing import Optional, Set
 
 from xml.etree.ElementTree import Element
 
@@ -11,8 +13,8 @@ class ParentType(Enum):
     EXCEPTION_TYPE = auto()
     SIMPLE_TYPE = auto()
 
-OBSERVED_TYPES = set()
-OBSERVED_ENUMS = set()
+OBSERVED_TYPES: Set[str] = set()
+OBSERVED_ENUMS: Set[str] = set()
 
 def strip_string(s: Optional[str]) -> Optional[str]:
     if s is None:
@@ -20,17 +22,19 @@ def strip_string(s: Optional[str]) -> Optional[str]:
 
     return " ".join([x.strip() for x in s.split("\n")]).strip()
 
-def parse_description(el: Element):
+def parse_description(el: Element) -> None:
     assert el.tag == "description"
     assert not el.attrib
     assert len(el) == 0
     if el.text is not None: # nullable string
         print(strip_string(el.text))
 
-def parse_exceptions(el: Element):
+def parse_exceptions(el: Element) -> None:
     assert el.tag == "exceptions"
     assert not el.attrib
     assert not strip_string(el.text)
+
+    child: Element
     for child in el:
         if child.tag == "exception":
             _type = child.attrib.pop("type")
@@ -71,6 +75,7 @@ def parse_validValues(el: Element, _parent: ParentType) -> None:
     assert not el.attrib
     assert not strip_string(el.text)
 
+    child: Element
     for child in el:
         if child.tag == "value":
             parse_value(child, _parent=_parent)
@@ -79,9 +84,10 @@ def parse_validValues(el: Element, _parent: ParentType) -> None:
         raise NotImplementedError(f"validValues child {child.tag}")
 
 def parse_parameter(el: Element, _parent: ParentType) -> None:
+    mandatory: bool
     try:
-        mandatory = el.attrib.pop("mandatory")
-        assert mandatory == "true"
+        mandatory_str = el.attrib.pop("mandatory")
+        assert mandatory_str == "true"
         mandatory = True
     except Exception:
         mandatory = False
@@ -95,6 +101,8 @@ def parse_parameter(el: Element, _parent: ParentType) -> None:
     assert not strip_string(el.text)
 
     description_observed = False  # should be unique
+
+    child: Element
     for child in el:
         if child.tag == "description":
             assert not description_observed
@@ -107,7 +115,7 @@ def parse_parameter(el: Element, _parent: ParentType) -> None:
 
         raise NotImplementedError(f"parameter {_parent} {child.tag}")
 
-def parse_request(el: Element):
+def parse_request(el: Element) -> None:
     assert el.tag == "request"
     assert not el.attrib
     assert not strip_string(el.text)
@@ -119,12 +127,14 @@ def parse_request(el: Element):
         raise NotImplementedError
 
 
-def parse_parameters(el: Element):
+def parse_parameters(el: Element) -> None:
     # operation
 
     assert el.tag == "parameters"
     assert not el.attrib
     assert not strip_string(el.text)
+
+    child: Element
     for child in el:
         if child.tag == "request":
             print("request")
@@ -166,7 +176,7 @@ def parse_operation(el: Element) -> None:
             print()
             continue
         if child.tag == "parameters":
-            parameters = parse_parameters(child)
+            parse_parameters(child)
             continue
 
         print(OBSERVED_TYPES)
@@ -181,6 +191,8 @@ def parse_dataType(el: Element) -> None:
     print(name)
 
     description_observed = False  # should be unique
+
+    child: Element
     for child in el:
         if child.tag == "description":
             assert not description_observed
@@ -204,6 +216,8 @@ def parse_exceptionType(el: Element) -> None:
     print(name, prefix)
 
     description_observed = False  # should be unique
+
+    child: Element
     for child in el:
         if child.tag == "description":
             assert not description_observed
@@ -227,6 +241,8 @@ def parse_simpleType(el: Element) -> None:
     print(name, _type)
 
     description_observed = False  # should be unique
+
+    child: Element
     for child in el:
         if child.tag == "description":
             assert not description_observed
@@ -243,10 +259,11 @@ def parse_simpleType(el: Element) -> None:
         print(child.tag)
         raise NotImplementedError
 
-def main():
+def main() -> None:
     tree = ET.parse("SportsAPING.xml")
-    root = tree.getroot()
+    root: Element = tree.getroot()
 
+    child: Element
     for child in root:
         if child.tag == "description":
             assert not child.attrib
