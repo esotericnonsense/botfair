@@ -77,21 +77,21 @@ def parse_exceptions(el: Element) -> None:
         print(child.tag)
         raise NotImplementedError
 
-def parse_value(el: Element, _parent: ParentType) -> None:
+def parse_value(el: Element, parent: ParentType) -> None:
     name = el.attrib.pop("name")
     OBSERVED_ENUMS.add(name)
 
-    if _parent == ParentType.EXCEPTION_TYPE:
+    if parent == ParentType.EXCEPTION_TYPE:
         _id_str: str = el.attrib.pop("id")
         assert _id_str.isdigit()
         _id = int(_id_str)
         print(f"value {_id} {name}")
 
-    elif _parent == ParentType.SIMPLE_TYPE:
+    elif parent == ParentType.SIMPLE_TYPE:
         print(f"value {name}")
 
     else:
-        raise NotImplementedError(f"value: {_parent}")
+        raise NotImplementedError(f"value: {parent}")
 
     assert not el.attrib, el.attrib
     assert not strip_string(el.text)
@@ -99,18 +99,18 @@ def parse_value(el: Element, _parent: ParentType) -> None:
     assert len(el) == 1
     parse_description(el[0])
 
-def parse_validValues(el: Element, _parent: ParentType) -> None:
+def parse_validValues(el: Element, parent: ParentType) -> None:
     assert not el.attrib
     assert not strip_string(el.text)
 
     for child in el: #type: Element
         if child.tag == "value":
-            parse_value(child, _parent=_parent)
+            parse_value(child, parent=parent)
             continue
 
         raise NotImplementedError(f"validValues child {child.tag}")
 
-def parse_parameter(el: Element, _parent: ParentType) -> None:
+def parse_parameter(el: Element, parent: ParentType) -> None:
     mandatory: bool
     try:
         mandatory_str = el.attrib.pop("mandatory")
@@ -135,11 +135,11 @@ def parse_parameter(el: Element, _parent: ParentType) -> None:
             description_observed = True
             parse_description(child)
             continue
-        if _parent == ParentType.EXCEPTION_TYPE and child.tag == "validValues":
-            parse_validValues(child, _parent=ParentType.EXCEPTION_TYPE)
+        if parent == ParentType.EXCEPTION_TYPE and child.tag == "validValues":
+            parse_validValues(child, parent=ParentType.EXCEPTION_TYPE)
             continue
 
-        raise NotImplementedError(f"parameter {_parent} {child.tag}")
+        raise NotImplementedError(f"parameter {parent} {child.tag}")
 
 def parse_request(el: Element) -> None:
     assert el.tag == "request"
@@ -148,7 +148,7 @@ def parse_request(el: Element) -> None:
 
     for child in el: #type: Element
         if child.tag == "parameter":
-            parse_parameter(child, _parent=ParentType.OPERATION)
+            parse_parameter(child, parent=ParentType.OPERATION)
             continue
 
         raise NotImplementedError
@@ -224,7 +224,7 @@ def parse_dataType(el: Element) -> None:
             parse_description(child)
             continue
         if child.tag == "parameter":
-            parse_parameter(child, _parent=ParentType.DATA_TYPE)
+            parse_parameter(child, parent=ParentType.DATA_TYPE)
             continue
 
         print(child.tag)
@@ -249,7 +249,7 @@ def parse_exceptionType(el: Element) -> None:
             parse_description(child)
             continue
         if child.tag == "parameter":
-            parse_parameter(child, _parent=ParentType.EXCEPTION_TYPE)
+            parse_parameter(child, parent=ParentType.EXCEPTION_TYPE)
             continue
 
         print(child.tag)
@@ -272,11 +272,8 @@ def parse_simpleType(el: Element) -> None:
             description_observed = True
             parse_description(child)
             continue
-        # if child.tag == "parameter":
-        #     parse_parameter(child, _parent=ParentType.SIMPLE_TYPE)
-        #     continue
         if child.tag == "validValues":
-            parse_validValues(child, _parent=ParentType.SIMPLE_TYPE)
+            parse_validValues(child, parent=ParentType.SIMPLE_TYPE)
             continue
 
         print(child.tag)
