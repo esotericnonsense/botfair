@@ -2,18 +2,24 @@ import xml.etree.ElementTree as ET
 tree = ET.parse("SportsAPING.xml")
 root = tree.getroot()
 
+from typing import Optional
+
 from xml.etree.ElementTree import Element
 
 OBSERVED_TYPES = set()
 
-def strip_string(s: str):
+def strip_string(s: Optional[str]) -> Optional[str]:
+    if s is None:
+        return None
+
     return " ".join([x.strip() for x in s.split("\n")]).strip()
 
 def parse_description(el: Element):
     assert el.tag == "description"
     assert not el.attrib
     assert len(el) == 0
-    print(strip_string(el.text))
+    if el.text is not None: # nullable string
+        print(strip_string(el.text))
 
 def parse_exceptions(el: Element):
     assert el.tag == "exceptions"
