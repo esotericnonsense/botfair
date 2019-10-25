@@ -78,7 +78,8 @@ fn get_session_token() -> Result<String, AnyError> {
     let appheader = format!("{}", rand::random::<u128>());
 
     let login_request_form = LoginRequestForm { username, password };
-    info!("{:?}", login_request_form);
+
+    info!("LoginRequest ...");
     let login_response: LoginResponse = cl
         .post(CERTLOGIN_URI)
         .header("X-Application", appheader)
@@ -86,7 +87,7 @@ fn get_session_token() -> Result<String, AnyError> {
         .send()?
         .json()?;
 
-    info!("{:?}", login_response);
+    info!("LoginResponse: {:?}", login_response.loginStatus);
 
     match login_response.sessionToken {
         Some(token) => Ok(token),
@@ -124,7 +125,12 @@ fn main() -> Result<(), AnyError> {
         10,
         None,
     )?;
-    info!("{:?}", catalogues);
+    for catalogue in catalogues.iter() {
+        info!(
+            "{} {} {:?}",
+            catalogue.marketId, catalogue.marketName, catalogue.totalMatched
+        );
+    }
 
     let market_ids: Vec<MarketId> = catalogues
         .iter()
@@ -145,8 +151,7 @@ fn main() -> Result<(), AnyError> {
         None,
         None,
     )?;
-
-    info!("{:?}", books);
+    // info!("{:?}", books);
 
     let s: String = serde_json::to_string(&books).expect("whatever");
     println!("{}", s);
