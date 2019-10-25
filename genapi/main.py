@@ -58,14 +58,6 @@ class Operation(DataClassJsonMixin):
 
 
 @dataclass
-class BfEnum(DataClassJsonMixin):
-    """An enum as per the BF API"""
-
-    name: str
-    members: List[str]
-
-
-@dataclass
 class ExceptionType(DataClassJsonMixin):
     """An exception type as per the BF API"""
 
@@ -91,6 +83,17 @@ class DataType(DataClassJsonMixin):
     name: str
     description: Optional[str]
     params: List[Param]
+
+
+@dataclass
+class APING(DataClassJsonMixin):
+    """Parsed Betfair APING"""
+
+    description: Optional[str]
+    operations: List[Operation]
+    data_types: List[DataType]
+    exception_types: List[ExceptionType]
+    simple_types: List[SimpleType]
 
 
 class ParentType(Enum):
@@ -399,17 +402,16 @@ def parse_simpleType(el: Element) -> SimpleType:
     )
 
 
-def main() -> None:
-    tree = parse("SportsAPING.xml")
-    root: Element = tree.getroot()
-    assert not strip_string(root.text)
+def parse_aping(el: Element) -> APING:
+    # We ignore the attributes here deliberately.
+    assert not strip_string(el.text)
 
     description: Optional[str] = None
     operations: List[Operation] = []
     data_types: List[DataType] = []
     exception_types: List[ExceptionType] = []
     simple_types: List[SimpleType] = []
-    for child in root:  # type: Element
+    for child in el:  # type: Element
         if child.tag == "description":
             assert description is None
             description = parse_description(child)
@@ -429,12 +431,19 @@ def main() -> None:
 
         raise NotImplementedError(child.tag)
 
-    x = Operation.schema().dumps(operations, many=True)
-    # x = DataType.schema().dumps(data_types, many=True)
-    # x = ExceptionType.schema().dumps(exception_types, many=True)
-    # x = SimpleType.schema().dumps(simple_types, many=True)
+    return APING(
+        description=description,
+        operations=operations,
+        data_types=data_types,
+        exception_types=exception_types,
+        simple_types=simple_types,
+    )
 
-    print(x)
+
+def main() -> None:
+    tree = parse("SportsAPING.xml")
+    aping: APING = parse_aping(tree.getroot())
+    print(aping.to_json())
 
 
 if __name__ == "__main__":
