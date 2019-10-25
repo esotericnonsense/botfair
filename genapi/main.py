@@ -504,6 +504,7 @@ def generate_rust_types(simple_types: List[SimpleType]) -> str:
             formatted_values: str = ", ".join(
                 # TODO: string enum, ser/deser, etc
                 # f'{value.name} = "{value.name}"'
+                # actually this may work anyway
                 value.name
                 for value in simple_type.values
             )
