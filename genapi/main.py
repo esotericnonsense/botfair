@@ -440,33 +440,64 @@ def parse_aping(el: Element) -> APING:
     )
 
 
-def main() -> None:
-    tree = parse("SportsAPING.xml")
-    aping: APING = parse_aping(tree.getroot())
-    # print(aping.to_json())
+def python_type_to_rust_type(_type: str) -> str:
+    # This is a bit hacky, particularly for the compound types,
+    #   but the API is simple enough that this works anyway.
+    direct_conversions = {
+        "double": "f64",
+        "string": "String",  # possibly a &str
+        "dateTime": "DateTime<Utc>",  # possibly an unaware DT
+        "Set[string]": "HashSet<String>",  # hacky
+    }
 
-    def python_type_to_rust_type(_type: str) -> str:
-        # This is a bit hacky, particularly for the compound types,
-        #   but the API is simple enough that this works anyway.
-        direct_conversions = {
-            "double": "f64",
-            "string": "String",
-            "dateTime": "DateTime<Utc>",  # possibly an unaware DT
-            "Set[string]": "HashSet<String>",  # hacky
-        }
+    try:
+        return direct_conversions[_type]
+    except KeyError:
+        pass
 
-        try:
-            return direct_conversions[_type]
-        except KeyError:
-            pass
+    _type = _type.replace("List[", "Vec<")
+    _type = _type.replace("Map[", "HashMap<")
+    _type = _type.replace("Set[", "HashSet<")
+    _type = _type.replace("]", ">")
+    return _type
 
-        _type = _type.replace("List[", "Vec<")
-        _type = _type.replace("Map[", "HashMap<")
-        _type = _type.replace("Set[", "HashSet<")
-        _type = _type.replace("]", ">")
-        return _type
 
-    for operation in aping.operations:  # type: Operation
+def generate_rust_types(simple_types: List[SimpleType]) -> str:
+    """
+    Return API bindings for the operations.
+    For the time being the function bodies are just empty.
+    """
+
+    types: List[str] = []
+    for simple_type in simple_types:  # type: SimpleType
+        # enums.append(str(simple_type))
+        # TODO: document the descriptions along with the enum
+        if simple_type.values is None:
+            rust_type: str = python_type_to_rust_type(simple_type._type)
+            types.append(f"type {simple_type.name} = {rust_type};")
+            continue
+        else:
+            assert simple_type._type == "string"
+            formatted_values: str = ", ".join(
+                f'{value.name} = "{value.name}"'
+                for value in simple_type.values
+            )
+            types.append(
+                f"pub enum {simple_type.name} {{ {formatted_values} }}"
+            )
+            continue
+
+    return "\n".join(types)
+
+
+def generate_rust_functions(operations: List[Operation]) -> str:
+    """
+    Return API bindings for the operations.
+    For the time being the function bodies are just empty.
+    """
+
+    functions: List[str] = []
+    for operation in operations:  # type: Operation
         # print(operation)
         formatted_params: str = ", ".join(
             f"{param.name}: {python_type_to_rust_type(param._type)}"
@@ -475,9 +506,20 @@ def main() -> None:
         resp_type: str = python_type_to_rust_type(
             operation.simple_response._type
         )
-        print(
+        functions.append(
             f"pub fn {operation.name}({formatted_params}) -> {resp_type} {{}}"
         )
+
+    return "\n\n".join(functions)
+
+
+def main() -> None:
+    tree = parse("SportsAPING.xml")
+    aping: APING = parse_aping(tree.getroot())
+    # print(aping.to_json())
+
+    # print(generate_rust_functions(aping.operations))
+    print(generate_rust_types(aping.simple_types))
 
 
 if __name__ == "__main__":
