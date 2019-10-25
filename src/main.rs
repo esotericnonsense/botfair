@@ -23,11 +23,12 @@ use serde::{Deserialize, Serialize};
 use std::fs;
 
 mod generated_api;
+mod json_rpc;
 
 const CERTLOGIN_URI: &str =
     "https://identitysso-cert.betfair.com/api/certlogin";
 const PFXFILE: &str = "/home/esotericnonsense/betfair/identity.pfx";
-//const APPKEYFILE: &str = "/home/esotericnonsense/betfair/betfair-app-key";
+const APPKEYFILE: &str = "/home/esotericnonsense/betfair/betfair-app-key";
 const USERFILE: &str = "/home/esotericnonsense/betfair/betfair-user";
 const PASSFILE: &str = "/home/esotericnonsense/betfair/betfair-pass";
 
@@ -90,6 +91,41 @@ fn get_session_token() -> Result<String, AnyError> {
     }
 }
 
+use generated_api::{listMarketBookRequest, MarketBook};
+use json_rpc::{RpcRequest, RpcResponse};
+//fn try_lmb(token: String) -> Result<Vec<MarketBook>, AnyError> {
+fn try_lmb(session_token: String) -> Result<(), AnyError> {
+    let app_key = fs::read_to_string(APPKEYFILE)?.replace("\n", "");
+    let cl: Client = Client::new();
+
+    let method = "SportsAPING/v1.0/listMarketBook".to_owned();
+    let params = listMarketBookRequest {
+        marketIds: vec!["x".to_owned()],
+        priceProjection: None,
+        orderProjection: None,
+        matchProjection: None,
+        includeOverallPosition: None,
+        partitionMatchedByStrategyRef: None,
+        customerStrategyRefs: None,
+        currencyCode: None,
+        locale: None,
+        matchedSince: None,
+        betIds: None,
+    };
+    let rpc_request = RpcRequest::new(method, params);
+
+    // TODO handle exceptions
+    let rpc_response: RpcResponse<listMarketBookRequest> = cl
+        .post(CERTLOGIN_URI)
+        .header("X-Application", app_key)
+        .header("X-Authentication", session_token)
+        .json(&rpc_request)
+        .send()?
+        .json()?;
+
+    Ok(())
+}
+
 fn main() -> Result<(), AnyError> {
     env_logger::Builder::from_default_env()
         .target(env_logger::Target::Stderr)
@@ -98,6 +134,7 @@ fn main() -> Result<(), AnyError> {
     match get_session_token() {
         Ok(x) => {
             info!("got token {}", x);
+            try_lmb(x);
             Ok(())
         }
         Err(e) => {

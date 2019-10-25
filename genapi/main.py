@@ -514,7 +514,8 @@ def generate_rust_types(simple_types: List[SimpleType]) -> str:
                 for value in simple_type.values
             )
             types.append(
-                f"pub enum {simple_type.name} {{ {formatted_values} }}"
+                f"""#[derive(Deserialize, Serialize)]
+pub enum {simple_type.name} {{ {formatted_values} }}"""
             )
             continue
 
@@ -544,7 +545,10 @@ def generate_rust_data_types(data_types: List[DataType]) -> str:
         if data_type.description is not None:
             types.append(f"/// {data_type.description}")
 
-        types.append(f"pub struct {data_type.name} {{ {formatted_params} }}")
+        types.append(
+            f"""#[derive(Deserialize, Serialize)]
+pub struct {data_type.name} {{ {formatted_params} }}"""
+        )
 
     return "\n".join(types)
 
@@ -572,10 +576,28 @@ def generate_rust_functions(operations: List[Operation]) -> str:
         resp_type: str = python_type_to_rust_type(
             operation.simple_response._type
         )
+
+        if len(operation.params) > 0:
+            struct_name: str = f"{operation.name}Request"
+            functions.append(
+                f"""#[derive(Deserialize, Serialize)]
+pub struct {struct_name} {{ {formatted_params} }}"""
+            )
+
+            formatted_params_struct: str = ", ".join(
+                f"{x[0]}" for x in params_converted
+            )
+
+            function_interior = f"let req: {struct_name} = {struct_name} {{ {formatted_params_struct} }};"
+        else:
+            function_interior = ""
+
         functions.append(
             # TODO: implement the actual functions
             # f"pub fn {operation.name}({formatted_params}) -> {resp_type} {{}}"
-            f"pub fn {operation.name}({formatted_params}) -> () {{}}"
+            f"""pub fn {operation.name}({formatted_params}) -> () {{
+    {function_interior}
+}}"""
         )
 
     return "\n\n".join(functions)
@@ -593,6 +615,7 @@ def main() -> None:
     print("use std::collections::HashSet;")
     print("use std::collections::HashMap;")
     print("use chrono::{DateTime, Utc};")
+    print("use serde::{Deserialize, Serialize};")
     print(generate_rust_functions(aping.operations))
     print(generate_rust_types(aping.simple_types))
     print(generate_rust_data_types(aping.data_types))
