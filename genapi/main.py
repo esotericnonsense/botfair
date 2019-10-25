@@ -450,7 +450,7 @@ def parse_aping(el: Element) -> APING:
 def aping_name_to_rust_name(name: str) -> str:
     # These are keywords in Rust. We need to figure out how
     #   to handle these later.
-    direct_conversions = {"type": "_type", "id": "_id"}
+    direct_conversions = {"type": "r#type", "id": "r#id", "async": "r#async"}
 
     try:
         return direct_conversions[name]
@@ -467,7 +467,10 @@ def python_type_to_rust_type(_type: str) -> str:
         "double": "f64",
         "string": "String",  # possibly a &str
         "dateTime": "DateTime<Utc>",  # possibly an unaware DT
-        "Set[string]": "HashSet<String>",  # hacky
+        # These are pretty hacky, we should parse properly
+        "Set[string]": "HashSet<String>",
+        "Map[string, string]": "HashMap<String, String>",
+        "Map[string, Matches]": "HashMap<String, Matches>",
     }
 
     try:
@@ -499,7 +502,9 @@ def generate_rust_types(simple_types: List[SimpleType]) -> str:
         else:
             assert simple_type._type == "string"
             formatted_values: str = ", ".join(
-                f'{value.name} = "{value.name}"'
+                # TODO: string enum, ser/deser, etc
+                # f'{value.name} = "{value.name}"'
+                value.name
                 for value in simple_type.values
             )
             types.append(
@@ -547,15 +552,24 @@ def generate_rust_functions(operations: List[Operation]) -> str:
     functions: List[str] = []
     for operation in operations:  # type: Operation
         # print(operation)
+
+        params_converted: List[Tuple[str, str]] = []
+        for param in operation.params:  # type: Param
+            name: str = aping_name_to_rust_name(param.name)
+            _type: str = python_type_to_rust_type(param._type)
+            params_converted.append((name, _type))
+
         formatted_params: str = ", ".join(
-            f"{param.name}: {python_type_to_rust_type(param._type)}"
-            for param in operation.params
+            f"{x[0]}: {x[1]}" for x in params_converted
         )
+
         resp_type: str = python_type_to_rust_type(
             operation.simple_response._type
         )
         functions.append(
-            f"pub fn {operation.name}({formatted_params}) -> {resp_type} {{}}"
+            # TODO: implement the actual functions
+            # f"pub fn {operation.name}({formatted_params}) -> {resp_type} {{}}"
+            f"pub fn {operation.name}({formatted_params}) -> () {{}}"
         )
 
     return "\n\n".join(functions)
@@ -566,8 +580,15 @@ def main() -> None:
     aping: APING = parse_aping(tree.getroot())
     # print(aping.to_json())
 
-    # print(generate_rust_functions(aping.operations))
-    # print(generate_rust_types(aping.simple_types))
+    print("#![allow(non_camel_case_types)]")  # TODO figure this out
+    print("#![allow(non_snake_case)]")  # TODO figure this out
+    print("#![allow(unused_variables)]")
+    print("#![allow(dead_code)]")
+    print("use std::collections::HashSet;")
+    print("use std::collections::HashMap;")
+    print("use chrono::{DateTime, Utc};")
+    print(generate_rust_functions(aping.operations))
+    print(generate_rust_types(aping.simple_types))
     print(generate_rust_data_types(aping.data_types))
 
 
