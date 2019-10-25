@@ -146,7 +146,14 @@ def parse_description(el: Element) -> Optional[str]:
     if el.text is None:
         return None
 
-    return strip_string(el.text)
+    s: Optional[str] = strip_string(el.text)
+    if s is None:
+        return None
+
+    if s == "":
+        return None
+
+    return s
 
 
 def parse_exceptions(el: Element) -> List[ExceptionResponse]:
@@ -440,6 +447,19 @@ def parse_aping(el: Element) -> APING:
     )
 
 
+def aping_name_to_rust_name(name: str) -> str:
+    # These are keywords in Rust. We need to figure out how
+    #   to handle these later.
+    direct_conversions = {"type": "_type", "id": "_id"}
+
+    try:
+        return direct_conversions[name]
+    except KeyError:
+        pass
+
+    return name
+
+
 def python_type_to_rust_type(_type: str) -> str:
     # This is a bit hacky, particularly for the compound types,
     #   but the API is simple enough that this works anyway.
@@ -470,8 +490,8 @@ def generate_rust_types(simple_types: List[SimpleType]) -> str:
 
     types: List[str] = []
     for simple_type in simple_types:  # type: SimpleType
-        # enums.append(str(simple_type))
-        # TODO: document the descriptions along with the enum
+        # types.append(str(simple_type))
+        # TODO: document the descriptions along with the type/enum
         if simple_type.values is None:
             rust_type: str = python_type_to_rust_type(simple_type._type)
             types.append(f"type {simple_type.name} = {rust_type};")
@@ -486,6 +506,34 @@ def generate_rust_types(simple_types: List[SimpleType]) -> str:
                 f"pub enum {simple_type.name} {{ {formatted_values} }}"
             )
             continue
+
+    return "\n".join(types)
+
+
+def generate_rust_data_types(data_types: List[DataType]) -> str:
+    """
+    Return API bindings for the operations.
+    For the time being the function bodies are just empty.
+    """
+
+    types: List[str] = []
+    for data_type in data_types:  # type: DataType
+        # types.append(str(data_type))
+        # TODO: document the descriptions along with the param
+
+        params_converted: List[Tuple[str, str]] = []
+        for param in data_type.params:  # type: Param
+            name: str = aping_name_to_rust_name(param.name)
+            _type: str = python_type_to_rust_type(param._type)
+            params_converted.append((name, _type))
+
+        formatted_params: str = ", ".join(
+            f"{x[0]}: {x[1]}" for x in params_converted
+        )
+        if data_type.description is not None:
+            types.append(f"/// {data_type.description}")
+
+        types.append(f"pub struct {data_type.name} {{ {formatted_params} }}")
 
     return "\n".join(types)
 
@@ -519,7 +567,8 @@ def main() -> None:
     # print(aping.to_json())
 
     # print(generate_rust_functions(aping.operations))
-    print(generate_rust_types(aping.simple_types))
+    # print(generate_rust_types(aping.simple_types))
+    print(generate_rust_data_types(aping.data_types))
 
 
 if __name__ == "__main__":
