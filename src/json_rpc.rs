@@ -27,6 +27,12 @@ impl<T> RpcRequest<T> {
     }
 }
 
+impl<T> RpcResponse<T> {
+    pub fn into_inner(self) -> T {
+        self.result
+    }
+}
+
 // listEventTypes Request
 // [
 //     {

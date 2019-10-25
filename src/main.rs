@@ -27,6 +27,8 @@ mod json_rpc;
 
 const CERTLOGIN_URI: &str =
     "https://identitysso-cert.betfair.com/api/certlogin";
+const JSONRPC_URI: &str =
+    "https://api.betfair.com/exchange/betting/json-rpc/v1";
 const PFXFILE: &str = "/home/esotericnonsense/betfair/identity.pfx";
 const APPKEYFILE: &str = "/home/esotericnonsense/betfair/betfair-app-key";
 const USERFILE: &str = "/home/esotericnonsense/betfair/betfair-user";
@@ -93,14 +95,13 @@ fn get_session_token() -> Result<String, AnyError> {
 
 use generated_api::{listMarketBookRequest, MarketBook};
 use json_rpc::{RpcRequest, RpcResponse};
-//fn try_lmb(token: String) -> Result<Vec<MarketBook>, AnyError> {
-fn try_lmb(session_token: String) -> Result<(), AnyError> {
+fn try_lmb(session_token: String) -> Result<Vec<MarketBook>, AnyError> {
     let app_key = fs::read_to_string(APPKEYFILE)?.replace("\n", "");
     let cl: Client = Client::new();
 
     let method = "SportsAPING/v1.0/listMarketBook".to_owned();
     let params = listMarketBookRequest {
-        marketIds: vec!["x".to_owned()],
+        marketIds: vec!["1.164123879".to_owned()],
         priceProjection: None,
         orderProjection: None,
         matchProjection: None,
@@ -115,15 +116,15 @@ fn try_lmb(session_token: String) -> Result<(), AnyError> {
     let rpc_request = RpcRequest::new(method, params);
 
     // TODO handle exceptions
-    let rpc_response: RpcResponse<listMarketBookRequest> = cl
-        .post(CERTLOGIN_URI)
+    let rpc_response: RpcResponse<Vec<MarketBook>> = cl
+        .post(JSONRPC_URI)
         .header("X-Application", app_key)
         .header("X-Authentication", session_token)
         .json(&rpc_request)
         .send()?
         .json()?;
 
-    Ok(())
+    Ok(rpc_response.into_inner())
 }
 
 fn main() -> Result<(), AnyError> {
@@ -134,7 +135,8 @@ fn main() -> Result<(), AnyError> {
     match get_session_token() {
         Ok(x) => {
             info!("got token {}", x);
-            try_lmb(x);
+            let books: Vec<MarketBook> = try_lmb(x)?;
+            println!("{:?}", books);
             Ok(())
         }
         Err(e) => {

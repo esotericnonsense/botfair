@@ -518,7 +518,7 @@ def generate_rust_types(simple_types: List[SimpleType]) -> str:
                 for value in simple_type.values
             )
             types.append(
-                f"""#[derive(Deserialize, Serialize)]
+                f"""#[derive(Debug, Deserialize, Serialize)]
 pub enum {simple_type.name} {{ {formatted_values} }}"""
             )
             continue
@@ -550,7 +550,7 @@ def generate_rust_data_types(data_types: List[DataType]) -> str:
             types.append(f"/// {data_type.description}")
 
         types.append(
-            f"""#[derive(Deserialize, Serialize)]
+            f"""#[derive(Debug, Deserialize, Serialize)]
 pub struct {data_type.name} {{ {formatted_params} }}"""
         )
 
@@ -591,7 +591,7 @@ def generate_rust_functions(operations: List[Operation]) -> str:
             )
 
             functions.append(
-                f"""#[derive(Deserialize, Serialize)]
+                f"""#[derive(Serialize)]
 pub struct {struct_name} {{ {formatted_params_struct} }}"""
             )
 
