@@ -35,7 +35,7 @@ const USERFILE: &str = "/home/esotericnonsense/betfair/betfair-user";
 const PASSFILE: &str = "/home/esotericnonsense/betfair/betfair-pass";
 
 #[derive(Debug)]
-enum AnyError {
+pub enum AnyError {
     Io(std::io::Error),
     Reqwest(reqwest::Error),
     Other,
@@ -94,8 +94,7 @@ fn get_session_token() -> Result<String, AnyError> {
     }
 }
 
-use generated_api::{listMarketBookRequest, MarketBook, MarketId};
-use json_rpc::{RpcRequest, RpcResponse};
+use generated_api::{listMarketBook, MarketBook, MarketId};
 fn try_lmb(
     session_token: String,
     market_id: MarketId,
@@ -105,32 +104,26 @@ fn try_lmb(
     let proxy = reqwest::Proxy::all("socks5h://127.0.0.1:40001")?;
     let cl: Client = Client::builder().proxy(proxy).build()?;
 
-    let method = "SportsAPING/v1.0/listMarketBook".to_owned();
-    let params = listMarketBookRequest {
-        marketIds: vec![market_id],
-        priceProjection: None,
-        orderProjection: None,
-        matchProjection: None,
-        includeOverallPosition: None,
-        partitionMatchedByStrategyRef: None,
-        customerStrategyRefs: None,
-        currencyCode: None,
-        locale: None,
-        matchedSince: None,
-        betIds: None,
-    };
-    let rpc_request = RpcRequest::new(method, params);
-
     // TODO handle exceptions
-    let rpc_response: RpcResponse<Vec<MarketBook>> = cl
+    let rb: reqwest::RequestBuilder = cl
         .post(JSONRPC_URI)
         .header("X-Application", app_key)
-        .header("X-Authentication", session_token)
-        .json(&rpc_request)
-        .send()?
-        .json()?;
+        .header("X-Authentication", session_token);
 
-    Ok(rpc_response.into_inner())
+    listMarketBook(
+        rb,
+        vec![market_id],
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+    )
 }
 
 fn main() -> Result<(), AnyError> {

@@ -581,8 +581,9 @@ def generate_rust_functions(operations: List[Operation]) -> str:
             _type: str = python_type_to_rust_type(param._type, param.mandatory)
             params_converted.append((name, _type))
 
-        formatted_params: str = ", ".join(
-            f"{x[0]}: {x[1]}" for x in params_converted
+        formatted_params_args: str = ", ".join(
+            ["rb: RequestBuilder"]
+            + [f"{x[0]}: {x[1]}" for x in params_converted]
         )
 
         resp_type: str = python_type_to_rust_type(
@@ -615,14 +616,30 @@ pub struct {struct_name} {{ {formatted_params_struct} }}"""
                 f"{x[0]}" for x in params_converted
             )
 
-            function_interior = f"let req: {struct_name} = {struct_name} {{ {formatted_params_declare} }};"
+            function_interior = f"""
+let req: {struct_name} = {struct_name} {{ {formatted_params_declare} }};
+let rpc_request: RpcRequest<{struct_name}> = RpcRequest::new(
+    \"SportsAPING/v1.0/{operation.name}\".to_owned(),
+    req
+);
+let resp: RpcResponse<{resp_type}> = rb.json(&rpc_request).send()?.json()?;
+Ok(resp.into_inner())
+"""
         else:
-            function_interior = ""
+            # TODO this smells, repetition
+            function_interior = f"""
+let rpc_request: RpcRequest<()> = RpcRequest::new(
+    \"SportsAPING/v1.0/{operation.name}\".to_owned(),
+    ()
+);
+let resp: RpcResponse<{resp_type}> = rb.json(&rpc_request).send()?.json()?;
+Ok(resp.into_inner())
+"""
 
         functions.append(
             # TODO: implement the actual functions
             # f"pub fn {operation.name}({formatted_params}) -> {resp_type} {{}}"
-            f"""pub fn {operation.name}({formatted_params}) -> () {{
+            f"""pub fn {operation.name}({formatted_params_args}) -> Result<{resp_type}, AnyError> {{
     {function_interior}
 }}"""
         )
@@ -642,6 +659,9 @@ def main() -> None:
     print("use std::collections::HashMap;")
     print("use chrono::{DateTime, Utc};")
     print("use serde::{Deserialize, Serialize};")
+    print("use crate::json_rpc::{RpcRequest, RpcResponse};")
+    print("use crate::AnyError;")
+    print("use reqwest::RequestBuilder;")
     print(generate_rust_functions(aping.operations))
     print(generate_rust_types(aping.simple_types))
     print(generate_rust_data_types(aping.data_types))

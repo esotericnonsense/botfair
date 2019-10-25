@@ -8,13 +8,6 @@ pub struct RpcRequest<T> {
     id: String,
 }
 
-#[derive(Deserialize)]
-pub struct RpcResponse<T> {
-    jsonrpc: String,
-    result: T,
-    id: String,
-}
-
 impl<T> RpcRequest<T> {
     pub fn new(method: String, params: T) -> Self {
         let r: u128 = rand::random();
@@ -27,8 +20,18 @@ impl<T> RpcRequest<T> {
     }
 }
 
+#[derive(Deserialize)]
+pub struct RpcResponse<T> {
+    jsonrpc: String,
+    result: T,
+    id: String,
+}
+
 impl<T> RpcResponse<T> {
     pub fn into_inner(self) -> T {
+        // TODO check these? do we care?
+        let _ = self.jsonrpc;
+        let _ = self.id;
         self.result
     }
 }
