@@ -652,6 +652,9 @@ def main() -> None:
     aping: APING = parse_aping(tree.getroot())
     # print(aping.to_json())
 
+    print("// This file is generated.")
+    print("// Any manual edits will be overwritten.")
+    print()
     print("#![allow(non_camel_case_types)]")  # TODO figure this out
     print("#![allow(non_snake_case)]")  # TODO figure this out
     print("#![allow(unused_variables)]")
