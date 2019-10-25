@@ -466,12 +466,16 @@ def aping_name_to_rust_name(name: str) -> str:
 def python_type_to_rust_type(_type: str, mandatory: bool = True) -> str:
     # This is a bit hacky, particularly for the compound types,
     #   but the API is simple enough that this works anyway.
+
+    # We assume sets are actually vectors because otherwise the API
+    #   is insane.
+
     direct_conversions = {
         "double": "f64",
         "string": "String",  # possibly a &str
         "dateTime": "DateTime<Utc>",  # possibly an unaware DT
         # These are pretty hacky, we should parse properly
-        "Set[string]": "HashSet<String>",
+        "Set[string]": "Vec<String>",
         "Map[string, string]": "HashMap<String, String>",
         "Map[string, Matches]": "HashMap<String, Matches>",
     }
@@ -481,7 +485,7 @@ def python_type_to_rust_type(_type: str, mandatory: bool = True) -> str:
     except KeyError:
         _type = _type.replace("List[", "Vec<")
         _type = _type.replace("Map[", "HashMap<")
-        _type = _type.replace("Set[", "HashSet<")
+        _type = _type.replace("Set[", "Vec<")
         _type = _type.replace("]", ">")
 
     if mandatory == False:
@@ -579,16 +583,23 @@ def generate_rust_functions(operations: List[Operation]) -> str:
 
         if len(operation.params) > 0:
             struct_name: str = f"{operation.name}Request"
-            functions.append(
-                f"""#[derive(Deserialize, Serialize)]
-pub struct {struct_name} {{ {formatted_params} }}"""
+
+            # TODO these should probably not be public, just for now
+            #       so that we can test outside of jsonrpc
+            formatted_params_struct: str = ", ".join(
+                f"pub {x[0]}: {x[1]}" for x in params_converted
             )
 
-            formatted_params_struct: str = ", ".join(
+            functions.append(
+                f"""#[derive(Deserialize, Serialize)]
+pub struct {struct_name} {{ {formatted_params_struct} }}"""
+            )
+
+            formatted_params_declare: str = ", ".join(
                 f"{x[0]}" for x in params_converted
             )
 
-            function_interior = f"let req: {struct_name} = {struct_name} {{ {formatted_params_struct} }};"
+            function_interior = f"let req: {struct_name} = {struct_name} {{ {formatted_params_declare} }};"
         else:
             function_interior = ""
 
@@ -612,7 +623,6 @@ def main() -> None:
     print("#![allow(non_snake_case)]")  # TODO figure this out
     print("#![allow(unused_variables)]")
     print("#![allow(dead_code)]")
-    print("use std::collections::HashSet;")
     print("use std::collections::HashMap;")
     print("use chrono::{DateTime, Utc};")
     print("use serde::{Deserialize, Serialize};")
