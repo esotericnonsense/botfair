@@ -22,6 +22,8 @@ use reqwest::{Client, Identity};
 use serde::{Deserialize, Serialize};
 use std::fs;
 
+mod generated_api;
+
 const CERTLOGIN_URI: &str =
     "https://identitysso-cert.betfair.com/api/certlogin";
 const PFXFILE: &str = "/home/esotericnonsense/betfair/identity.pfx";
