@@ -1,2 +1,5 @@
 env/*
 .mypy_cache/*
+
+# Ignore generated rust files
+*.rs

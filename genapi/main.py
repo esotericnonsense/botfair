@@ -443,7 +443,41 @@ def parse_aping(el: Element) -> APING:
 def main() -> None:
     tree = parse("SportsAPING.xml")
     aping: APING = parse_aping(tree.getroot())
-    print(aping.to_json())
+    # print(aping.to_json())
+
+    def python_type_to_rust_type(_type: str) -> str:
+        # This is a bit hacky, particularly for the compound types,
+        #   but the API is simple enough that this works anyway.
+        direct_conversions = {
+            "double": "f64",
+            "string": "String",
+            "dateTime": "DateTime<Utc>",  # possibly an unaware DT
+            "Set[string]": "HashSet<String>",  # hacky
+        }
+
+        try:
+            return direct_conversions[_type]
+        except KeyError:
+            pass
+
+        _type = _type.replace("List[", "Vec<")
+        _type = _type.replace("Map[", "HashMap<")
+        _type = _type.replace("Set[", "HashSet<")
+        _type = _type.replace("]", ">")
+        return _type
+
+    for operation in aping.operations:  # type: Operation
+        # print(operation)
+        formatted_params: str = ", ".join(
+            f"{param.name}: {python_type_to_rust_type(param._type)}"
+            for param in operation.params
+        )
+        resp_type: str = python_type_to_rust_type(
+            operation.simple_response._type
+        )
+        print(
+            f"pub fn {operation.name}({formatted_params}) -> {resp_type} {{}}"
+        )
 
 
 if __name__ == "__main__":
