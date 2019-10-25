@@ -488,7 +488,7 @@ def python_type_to_rust_type(_type: str, mandatory: bool = True) -> str:
         _type = _type.replace("Set[", "Vec<")
         _type = _type.replace("]", ">")
 
-    if mandatory == False:
+    if mandatory is False:
         return f"Option<{_type}>"
 
     return _type
@@ -637,9 +637,8 @@ Ok(resp.into_inner())
 """
 
         functions.append(
-            # TODO: implement the actual functions
-            # f"pub fn {operation.name}({formatted_params}) -> {resp_type} {{}}"
-            f"""pub fn {operation.name}({formatted_params_args}) -> Result<{resp_type}, AnyError> {{
+            f"""pub fn {operation.name}({formatted_params_args}) ->
+Result<{resp_type}, AnyError> {{
     {function_interior}
 }}"""
         )

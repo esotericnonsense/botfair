@@ -106,7 +106,8 @@ pub fn listMarketTypes(
     filter: MarketFilter,
     locale: Option<String>,
 ) -> Result<Vec<MarketTypeResult>, AnyError> {
-    let req: listMarketTypesRequest = listMarketTypesRequest { filter, locale };
+    let req: listMarketTypesRequest =
+        listMarketTypesRequest { filter, locale };
     let rpc_request: RpcRequest<listMarketTypesRequest> =
         RpcRequest::new("SportsAPING/v1.0/listMarketTypes".to_owned(), req);
     let resp: RpcResponse<Vec<MarketTypeResult>> =
@@ -181,8 +182,10 @@ pub fn listMarketCatalogue(
         maxResults,
         locale,
     };
-    let rpc_request: RpcRequest<listMarketCatalogueRequest> =
-        RpcRequest::new("SportsAPING/v1.0/listMarketCatalogue".to_owned(), req);
+    let rpc_request: RpcRequest<listMarketCatalogueRequest> = RpcRequest::new(
+        "SportsAPING/v1.0/listMarketCatalogue".to_owned(),
+        req,
+    );
     let resp: RpcResponse<Vec<MarketCatalogue>> =
         rb.json(&rpc_request).send()?.json()?;
     Ok(resp.into_inner())
@@ -624,12 +627,12 @@ pub fn setDefaultExposureLimitForMarketGroups(
             marketGroupType,
             limit,
         };
-    let rpc_request: RpcRequest<setDefaultExposureLimitForMarketGroupsRequest> =
-        RpcRequest::new(
-            "SportsAPING/v1.0/setDefaultExposureLimitForMarketGroups"
-                .to_owned(),
-            req,
-        );
+    let rpc_request: RpcRequest<
+        setDefaultExposureLimitForMarketGroupsRequest,
+    > = RpcRequest::new(
+        "SportsAPING/v1.0/setDefaultExposureLimitForMarketGroups".to_owned(),
+        req,
+    );
     let resp: RpcResponse<String> = rb.json(&rpc_request).send()?.json()?;
     Ok(resp.into_inner())
 }
@@ -670,7 +673,8 @@ pub fn removeDefaultExposureLimitForMarketGroups(
     let rpc_request: RpcRequest<
         removeDefaultExposureLimitForMarketGroupsRequest,
     > = RpcRequest::new(
-        "SportsAPING/v1.0/removeDefaultExposureLimitForMarketGroups".to_owned(),
+        "SportsAPING/v1.0/removeDefaultExposureLimitForMarketGroups"
+            .to_owned(),
         req,
     );
     let resp: RpcResponse<String> = rb.json(&rpc_request).send()?.json()?;
