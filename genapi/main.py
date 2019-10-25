@@ -506,7 +506,7 @@ def generate_rust_types(simple_types: List[SimpleType]) -> str:
         # TODO: document the descriptions along with the type/enum
         if simple_type.values is None:
             rust_type: str = python_type_to_rust_type(simple_type._type)
-            types.append(f"type {simple_type.name} = {rust_type};")
+            types.append(f"pub type {simple_type.name} = {rust_type};")
             continue
         else:
             assert simple_type._type == "string"
@@ -543,8 +543,16 @@ def generate_rust_data_types(data_types: List[DataType]) -> str:
             _type: str = python_type_to_rust_type(param._type, param.mandatory)
             params_converted.append((name, _type))
 
-        formatted_params: str = ", ".join(
-            f"{x[0]}: {x[1]}" for x in params_converted
+        def format_param(x):
+            # TODO: this is super ugly. seriously?
+            if x[1].startswith("Option<"):
+                return f"""#[serde(skip_serializing_if = "Option::is_none")]
+{x[0]}: {x[1]}"""
+
+            return f"{x[0]}: {x[1]}"
+
+        formatted_params: str = ", \n".join(
+            format_param(x) for x in params_converted
         )
         if data_type.description is not None:
             types.append(f"/// {data_type.description}")
@@ -586,8 +594,16 @@ def generate_rust_functions(operations: List[Operation]) -> str:
 
             # TODO these should probably not be public, just for now
             #       so that we can test outside of jsonrpc
-            formatted_params_struct: str = ", ".join(
-                f"pub {x[0]}: {x[1]}" for x in params_converted
+            def format_param(x):
+                # TODO: this is super ugly. seriously?
+                if x[1].startswith("Option<"):
+                    return f"""#[serde(skip_serializing_if = "Option::is_none")]
+pub {x[0]}: {x[1]}"""
+
+                return f"pub {x[0]}: {x[1]}"
+
+            formatted_params_struct: str = ", \n".join(
+                format_param(x) for x in params_converted
             )
 
             functions.append(

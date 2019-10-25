@@ -70,9 +70,10 @@ fn get_session_token() -> Result<String, AnyError> {
     let username = fs::read_to_string(USERFILE)?.replace("\n", "");
     let password = fs::read_to_string(PASSFILE)?.replace("\n", "");
 
+    let proxy = reqwest::Proxy::all("socks5h://127.0.0.1:40001")?;
     let ident =
         Identity::from_pkcs12_der(std::fs::read(PFXFILE)?.as_slice(), "")?;
-    let cl: Client = Client::builder().identity(ident).build()?;
+    let cl: Client = Client::builder().identity(ident).proxy(proxy).build()?;
 
     let appheader = format!("{}", rand::random::<u128>());
 
@@ -93,15 +94,20 @@ fn get_session_token() -> Result<String, AnyError> {
     }
 }
 
-use generated_api::{listMarketBookRequest, MarketBook};
+use generated_api::{listMarketBookRequest, MarketBook, MarketId};
 use json_rpc::{RpcRequest, RpcResponse};
-fn try_lmb(session_token: String) -> Result<Vec<MarketBook>, AnyError> {
+fn try_lmb(
+    session_token: String,
+    market_id: MarketId,
+) -> Result<Vec<MarketBook>, AnyError> {
     let app_key = fs::read_to_string(APPKEYFILE)?.replace("\n", "");
-    let cl: Client = Client::new();
+
+    let proxy = reqwest::Proxy::all("socks5h://127.0.0.1:40001")?;
+    let cl: Client = Client::builder().proxy(proxy).build()?;
 
     let method = "SportsAPING/v1.0/listMarketBook".to_owned();
     let params = listMarketBookRequest {
-        marketIds: vec!["1.164123879".to_owned()],
+        marketIds: vec![market_id],
         priceProjection: None,
         orderProjection: None,
         matchProjection: None,
@@ -134,9 +140,10 @@ fn main() -> Result<(), AnyError> {
 
     match get_session_token() {
         Ok(x) => {
-            info!("got token {}", x);
-            let books: Vec<MarketBook> = try_lmb(x)?;
-            println!("{:?}", books);
+            let books: Vec<MarketBook> = try_lmb(x, "1.156586178".to_owned())?;
+            info!("{:?}", books);
+            let s: String = serde_json::to_string(&books).expect("whatever");
+            println!("{}", s);
             Ok(())
         }
         Err(e) => {
