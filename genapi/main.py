@@ -224,9 +224,12 @@ def parse_parameter(el: Element, parent: ParentType) -> Param:
     mandatory: bool
     try:
         mandatory_str = el.attrib.pop("mandatory")
-        assert mandatory_str == "true"
-        mandatory = True
-    except Exception:
+        if mandatory_str == "true":
+            mandatory = True
+        else:
+            assert mandatory_str == "false"
+            mandatory = False
+    except KeyError:
         mandatory = False
 
     name = el.attrib.pop("name")
@@ -460,7 +463,7 @@ def aping_name_to_rust_name(name: str) -> str:
     return name
 
 
-def python_type_to_rust_type(_type: str) -> str:
+def python_type_to_rust_type(_type: str, mandatory: bool = True) -> str:
     # This is a bit hacky, particularly for the compound types,
     #   but the API is simple enough that this works anyway.
     direct_conversions = {
@@ -474,14 +477,16 @@ def python_type_to_rust_type(_type: str) -> str:
     }
 
     try:
-        return direct_conversions[_type]
+        _type = direct_conversions[_type]
     except KeyError:
-        pass
+        _type = _type.replace("List[", "Vec<")
+        _type = _type.replace("Map[", "HashMap<")
+        _type = _type.replace("Set[", "HashSet<")
+        _type = _type.replace("]", ">")
 
-    _type = _type.replace("List[", "Vec<")
-    _type = _type.replace("Map[", "HashMap<")
-    _type = _type.replace("Set[", "HashSet<")
-    _type = _type.replace("]", ">")
+    if mandatory == False:
+        return f"Option<{_type}>"
+
     return _type
 
 
@@ -530,7 +535,7 @@ def generate_rust_data_types(data_types: List[DataType]) -> str:
         params_converted: List[Tuple[str, str]] = []
         for param in data_type.params:  # type: Param
             name: str = aping_name_to_rust_name(param.name)
-            _type: str = python_type_to_rust_type(param._type)
+            _type: str = python_type_to_rust_type(param._type, param.mandatory)
             params_converted.append((name, _type))
 
         formatted_params: str = ", ".join(
@@ -557,7 +562,7 @@ def generate_rust_functions(operations: List[Operation]) -> str:
         params_converted: List[Tuple[str, str]] = []
         for param in operation.params:  # type: Param
             name: str = aping_name_to_rust_name(param.name)
-            _type: str = python_type_to_rust_type(param._type)
+            _type: str = python_type_to_rust_type(param._type, param.mandatory)
             params_converted.append((name, _type))
 
         formatted_params: str = ", ".join(
