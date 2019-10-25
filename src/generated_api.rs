@@ -106,8 +106,7 @@ pub fn listMarketTypes(
     filter: MarketFilter,
     locale: Option<String>,
 ) -> Result<Vec<MarketTypeResult>, AnyError> {
-    let req: listMarketTypesRequest =
-        listMarketTypesRequest { filter, locale };
+    let req: listMarketTypesRequest = listMarketTypesRequest { filter, locale };
     let rpc_request: RpcRequest<listMarketTypesRequest> =
         RpcRequest::new("SportsAPING/v1.0/listMarketTypes".to_owned(), req);
     let resp: RpcResponse<Vec<MarketTypeResult>> =
@@ -182,10 +181,8 @@ pub fn listMarketCatalogue(
         maxResults,
         locale,
     };
-    let rpc_request: RpcRequest<listMarketCatalogueRequest> = RpcRequest::new(
-        "SportsAPING/v1.0/listMarketCatalogue".to_owned(),
-        req,
-    );
+    let rpc_request: RpcRequest<listMarketCatalogueRequest> =
+        RpcRequest::new("SportsAPING/v1.0/listMarketCatalogue".to_owned(), req);
     let resp: RpcResponse<Vec<MarketCatalogue>> =
         rb.json(&rpc_request).send()?.json()?;
     Ok(resp.into_inner())
@@ -627,12 +624,12 @@ pub fn setDefaultExposureLimitForMarketGroups(
             marketGroupType,
             limit,
         };
-    let rpc_request: RpcRequest<
-        setDefaultExposureLimitForMarketGroupsRequest,
-    > = RpcRequest::new(
-        "SportsAPING/v1.0/setDefaultExposureLimitForMarketGroups".to_owned(),
-        req,
-    );
+    let rpc_request: RpcRequest<setDefaultExposureLimitForMarketGroupsRequest> =
+        RpcRequest::new(
+            "SportsAPING/v1.0/setDefaultExposureLimitForMarketGroups"
+                .to_owned(),
+            req,
+        );
     let resp: RpcResponse<String> = rb.json(&rpc_request).send()?.json()?;
     Ok(resp.into_inner())
 }
@@ -673,8 +670,7 @@ pub fn removeDefaultExposureLimitForMarketGroups(
     let rpc_request: RpcRequest<
         removeDefaultExposureLimitForMarketGroupsRequest,
     > = RpcRequest::new(
-        "SportsAPING/v1.0/removeDefaultExposureLimitForMarketGroups"
-            .to_owned(),
+        "SportsAPING/v1.0/removeDefaultExposureLimitForMarketGroups".to_owned(),
         req,
     );
     let resp: RpcResponse<String> = rb.json(&rpc_request).send()?.json()?;
@@ -1040,775 +1036,775 @@ pub enum LimitBreachActionType {
     STOP_BETTING,
     TEAR_DOWN_MARKET_GROUP,
 }
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Default, Deserialize, Serialize)]
 pub struct MarketFilter {
     #[serde(skip_serializing_if = "Option::is_none")]
-    textQuery: Option<String>,
+    pub textQuery: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    exchangeIds: Option<Vec<ExchangeId>>,
+    pub exchangeIds: Option<Vec<ExchangeId>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    eventTypeIds: Option<Vec<EventTypeId>>,
+    pub eventTypeIds: Option<Vec<EventTypeId>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    eventIds: Option<Vec<EventId>>,
+    pub eventIds: Option<Vec<EventId>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    competitionIds: Option<Vec<CompetitionId>>,
+    pub competitionIds: Option<Vec<CompetitionId>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    marketIds: Option<Vec<MarketId>>,
+    pub marketIds: Option<Vec<MarketId>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    venues: Option<Vec<Venue>>,
+    pub venues: Option<Vec<Venue>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    bspOnly: Option<bool>,
+    pub bspOnly: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    turnInPlayEnabled: Option<bool>,
+    pub turnInPlayEnabled: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    inPlayOnly: Option<bool>,
+    pub inPlayOnly: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    marketBettingTypes: Option<Vec<MarketBettingType>>,
+    pub marketBettingTypes: Option<Vec<MarketBettingType>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    marketCountries: Option<Vec<CountryCode>>,
+    pub marketCountries: Option<Vec<CountryCode>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    marketTypeCodes: Option<Vec<MarketType>>,
+    pub marketTypeCodes: Option<Vec<MarketType>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    marketStartTime: Option<TimeRange>,
+    pub marketStartTime: Option<TimeRange>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    withOrders: Option<Vec<OrderStatus>>,
+    pub withOrders: Option<Vec<OrderStatus>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    raceTypes: Option<Vec<String>>,
+    pub raceTypes: Option<Vec<String>>,
 }
 /// Information about a market
 #[derive(Debug, Deserialize, Serialize)]
 pub struct MarketCatalogue {
-    marketId: String,
-    marketName: String,
+    pub marketId: String,
+    pub marketName: String,
     #[serde(skip_serializing_if = "Option::is_none")]
-    marketStartTime: Option<DateTime<Utc>>,
+    pub marketStartTime: Option<DateTime<Utc>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    description: Option<MarketDescription>,
+    pub description: Option<MarketDescription>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    totalMatched: Option<f64>,
+    pub totalMatched: Option<f64>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    runners: Option<Vec<RunnerCatalog>>,
+    pub runners: Option<Vec<RunnerCatalog>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    eventType: Option<EventType>,
+    pub eventType: Option<EventType>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    competition: Option<Competition>,
+    pub competition: Option<Competition>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    event: Option<Event>,
+    pub event: Option<Event>,
 }
 /// The dynamic data in a market
 #[derive(Debug, Deserialize, Serialize)]
 pub struct MarketBook {
-    marketId: String,
-    isMarketDataDelayed: bool,
+    pub marketId: String,
+    pub isMarketDataDelayed: bool,
     #[serde(skip_serializing_if = "Option::is_none")]
-    status: Option<String>,
+    pub status: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    betDelay: Option<i32>,
+    pub betDelay: Option<i32>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    bspReconciled: Option<bool>,
+    pub bspReconciled: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    complete: Option<bool>,
+    pub complete: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    inplay: Option<bool>,
+    pub inplay: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    numberOfWinners: Option<i32>,
+    pub numberOfWinners: Option<i32>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    numberOfRunners: Option<i32>,
+    pub numberOfRunners: Option<i32>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    numberOfActiveRunners: Option<i32>,
+    pub numberOfActiveRunners: Option<i32>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    lastMatchTime: Option<DateTime<Utc>>,
+    pub lastMatchTime: Option<DateTime<Utc>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    totalMatched: Option<f64>,
+    pub totalMatched: Option<f64>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    totalAvailable: Option<f64>,
+    pub totalAvailable: Option<f64>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    crossMatching: Option<bool>,
+    pub crossMatching: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    runnersVoidable: Option<bool>,
+    pub runnersVoidable: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    version: Option<i64>,
+    pub version: Option<i64>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    runners: Option<Vec<Runner>>,
+    pub runners: Option<Vec<Runner>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    keyLineDescription: Option<KeyLineDescription>,
+    pub keyLineDescription: Option<KeyLineDescription>,
 }
 /// Information about the Runners (selections) in a market
 #[derive(Debug, Deserialize, Serialize)]
 pub struct RunnerCatalog {
-    selectionId: SelectionId,
-    runnerName: String,
-    handicap: f64,
-    sortPriority: i32,
+    pub selectionId: SelectionId,
+    pub runnerName: String,
+    pub handicap: f64,
+    pub sortPriority: i32,
     #[serde(skip_serializing_if = "Option::is_none")]
-    metadata: Option<HashMap<String, String>>,
+    pub metadata: Option<HashMap<String, String>>,
 }
 /// The dynamic data about runners in a market
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Runner {
-    selectionId: SelectionId,
-    handicap: f64,
-    status: String,
+    pub selectionId: SelectionId,
+    pub handicap: f64,
+    pub status: String,
     #[serde(skip_serializing_if = "Option::is_none")]
-    adjustmentFactor: Option<f64>,
+    pub adjustmentFactor: Option<f64>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    lastPriceTraded: Option<f64>,
+    pub lastPriceTraded: Option<f64>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    totalMatched: Option<f64>,
+    pub totalMatched: Option<f64>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    removalDate: Option<DateTime<Utc>>,
+    pub removalDate: Option<DateTime<Utc>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    sp: Option<StartingPrices>,
+    pub sp: Option<StartingPrices>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    ex: Option<ExchangePrices>,
+    pub ex: Option<ExchangePrices>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    orders: Option<Vec<Order>>,
+    pub orders: Option<Vec<Order>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    matches: Option<Vec<Match>>,
+    pub matches: Option<Vec<Match>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    matchesByStrategy: Option<HashMap<String, Matches>>,
+    pub matchesByStrategy: Option<HashMap<String, Matches>>,
 }
 /// Information about the Betfair Starting Price. Only available in BSP markets
 #[derive(Debug, Deserialize, Serialize)]
 pub struct StartingPrices {
     #[serde(skip_serializing_if = "Option::is_none")]
-    nearPrice: Option<f64>,
+    pub nearPrice: Option<f64>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    farPrice: Option<f64>,
+    pub farPrice: Option<f64>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    backStakeTaken: Option<Vec<PriceSize>>,
+    pub backStakeTaken: Option<Vec<PriceSize>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    layLiabilityTaken: Option<Vec<PriceSize>>,
+    pub layLiabilityTaken: Option<Vec<PriceSize>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    actualSP: Option<f64>,
+    pub actualSP: Option<f64>,
 }
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ExchangePrices {
     #[serde(skip_serializing_if = "Option::is_none")]
-    availableToBack: Option<Vec<PriceSize>>,
+    pub availableToBack: Option<Vec<PriceSize>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    availableToLay: Option<Vec<PriceSize>>,
+    pub availableToLay: Option<Vec<PriceSize>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    tradedVolume: Option<Vec<PriceSize>>,
+    pub tradedVolume: Option<Vec<PriceSize>>,
 }
 /// Event
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Event {
     #[serde(skip_serializing_if = "Option::is_none")]
-    r#id: Option<EventId>,
+    pub r#id: Option<EventId>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    name: Option<String>,
+    pub name: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    countryCode: Option<CountryCode>,
+    pub countryCode: Option<CountryCode>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    timezone: Option<String>,
+    pub timezone: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    venue: Option<String>,
+    pub venue: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    openDate: Option<DateTime<Utc>>,
+    pub openDate: Option<DateTime<Utc>>,
 }
 /// Event Result
 #[derive(Debug, Deserialize, Serialize)]
 pub struct EventResult {
     #[serde(skip_serializing_if = "Option::is_none")]
-    event: Option<Event>,
+    pub event: Option<Event>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    marketCount: Option<i32>,
+    pub marketCount: Option<i32>,
 }
 /// Competition
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Competition {
     #[serde(skip_serializing_if = "Option::is_none")]
-    r#id: Option<CompetitionId>,
+    pub r#id: Option<CompetitionId>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    name: Option<String>,
+    pub name: Option<String>,
 }
 /// Competition Result
 #[derive(Debug, Deserialize, Serialize)]
 pub struct CompetitionResult {
     #[serde(skip_serializing_if = "Option::is_none")]
-    competition: Option<Competition>,
+    pub competition: Option<Competition>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    marketCount: Option<i32>,
+    pub marketCount: Option<i32>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    competitionRegion: Option<String>,
+    pub competitionRegion: Option<String>,
 }
 /// EventType
 #[derive(Debug, Deserialize, Serialize)]
 pub struct EventType {
     #[serde(skip_serializing_if = "Option::is_none")]
-    r#id: Option<EventTypeId>,
+    pub r#id: Option<EventTypeId>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    name: Option<String>,
+    pub name: Option<String>,
 }
 /// EventType Result
 #[derive(Debug, Deserialize, Serialize)]
 pub struct EventTypeResult {
     #[serde(skip_serializing_if = "Option::is_none")]
-    eventType: Option<EventType>,
+    pub eventType: Option<EventType>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    marketCount: Option<i32>,
+    pub marketCount: Option<i32>,
 }
 /// MarketType Result
 #[derive(Debug, Deserialize, Serialize)]
 pub struct MarketTypeResult {
     #[serde(skip_serializing_if = "Option::is_none")]
-    marketType: Option<MarketType>,
+    pub marketType: Option<MarketType>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    marketCount: Option<i32>,
+    pub marketCount: Option<i32>,
 }
 /// CountryCode Result
 #[derive(Debug, Deserialize, Serialize)]
 pub struct CountryCodeResult {
     #[serde(skip_serializing_if = "Option::is_none")]
-    countryCode: Option<CountryCode>,
+    pub countryCode: Option<CountryCode>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    marketCount: Option<i32>,
+    pub marketCount: Option<i32>,
 }
 /// Venue Result
 #[derive(Debug, Deserialize, Serialize)]
 pub struct VenueResult {
     #[serde(skip_serializing_if = "Option::is_none")]
-    venue: Option<Venue>,
+    pub venue: Option<Venue>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    marketCount: Option<i32>,
+    pub marketCount: Option<i32>,
 }
 /// TimeRange
 #[derive(Debug, Deserialize, Serialize)]
 pub struct TimeRange {
     #[serde(skip_serializing_if = "Option::is_none")]
-    from: Option<DateTime<Utc>>,
+    pub from: Option<DateTime<Utc>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    to: Option<DateTime<Utc>>,
+    pub to: Option<DateTime<Utc>>,
 }
 /// TimeRange Result
 #[derive(Debug, Deserialize, Serialize)]
 pub struct TimeRangeResult {
     #[serde(skip_serializing_if = "Option::is_none")]
-    timeRange: Option<TimeRange>,
+    pub timeRange: Option<TimeRange>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    marketCount: Option<i32>,
+    pub marketCount: Option<i32>,
 }
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Order {
-    betId: BetId,
-    orderType: String,
-    status: String,
-    persistenceType: String,
-    side: String,
-    price: Price,
-    size: Size,
-    bspLiability: Size,
-    placedDate: DateTime<Utc>,
+    pub betId: BetId,
+    pub orderType: String,
+    pub status: String,
+    pub persistenceType: String,
+    pub side: String,
+    pub price: Price,
+    pub size: Size,
+    pub bspLiability: Size,
+    pub placedDate: DateTime<Utc>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    avgPriceMatched: Option<Price>,
+    pub avgPriceMatched: Option<Price>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    sizeMatched: Option<Size>,
+    pub sizeMatched: Option<Size>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    sizeRemaining: Option<Size>,
+    pub sizeRemaining: Option<Size>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    sizeLapsed: Option<Size>,
+    pub sizeLapsed: Option<Size>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    sizeCancelled: Option<Size>,
+    pub sizeCancelled: Option<Size>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    sizeVoided: Option<Size>,
+    pub sizeVoided: Option<Size>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    customerOrderRef: Option<CustomerOrderRef>,
+    pub customerOrderRef: Option<CustomerOrderRef>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    customerStrategyRef: Option<CustomerStrategyRef>,
+    pub customerStrategyRef: Option<CustomerStrategyRef>,
 }
 /// Match list.
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Matches {
     #[serde(skip_serializing_if = "Option::is_none")]
-    matches: Option<Vec<Match>>,
+    pub matches: Option<Vec<Match>>,
 }
 /// An individual bet Match, or rollup by price or avg price. Rollup depends on the requested MatchProjection
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Match {
     #[serde(skip_serializing_if = "Option::is_none")]
-    betId: Option<BetId>,
+    pub betId: Option<BetId>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    matchId: Option<MatchId>,
-    side: String,
-    price: Price,
-    Size: Size,
+    pub matchId: Option<MatchId>,
+    pub side: String,
+    pub price: Price,
+    pub Size: Size,
     #[serde(skip_serializing_if = "Option::is_none")]
-    matchDate: Option<DateTime<Utc>>,
+    pub matchDate: Option<DateTime<Utc>>,
 }
 /// Market definition
 #[derive(Debug, Deserialize, Serialize)]
 pub struct MarketState {
-    status: String,
-    betDelay: i32,
-    bspReconciled: bool,
-    complete: bool,
-    inplay: bool,
-    numberOfActiveRunners: i32,
-    lastMatchTime: DateTime<Utc>,
-    totalMatched: Size,
-    totalAvailable: Size,
+    pub status: String,
+    pub betDelay: i32,
+    pub bspReconciled: bool,
+    pub complete: bool,
+    pub inplay: bool,
+    pub numberOfActiveRunners: i32,
+    pub lastMatchTime: DateTime<Utc>,
+    pub totalMatched: Size,
+    pub totalAvailable: Size,
     #[serde(skip_serializing_if = "Option::is_none")]
-    keyLineDescription: Option<KeyLineDescription>,
+    pub keyLineDescription: Option<KeyLineDescription>,
 }
 /// Market version
 #[derive(Debug, Deserialize, Serialize)]
 pub struct MarketVersion {
     #[serde(skip_serializing_if = "Option::is_none")]
-    version: Option<i64>,
+    pub version: Option<i64>,
 }
 /// Market definition
 #[derive(Debug, Deserialize, Serialize)]
 pub struct MarketDescription {
-    persistenceEnabled: bool,
-    bspMarket: bool,
-    marketTime: DateTime<Utc>,
-    suspendTime: DateTime<Utc>,
+    pub persistenceEnabled: bool,
+    pub bspMarket: bool,
+    pub marketTime: DateTime<Utc>,
+    pub suspendTime: DateTime<Utc>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    settleTime: Option<DateTime<Utc>>,
-    bettingType: String,
-    turnInPlayEnabled: bool,
-    marketType: String,
-    regulator: String,
-    marketBaseRate: f64,
-    discountAllowed: bool,
+    pub settleTime: Option<DateTime<Utc>>,
+    pub bettingType: String,
+    pub turnInPlayEnabled: bool,
+    pub marketType: String,
+    pub regulator: String,
+    pub marketBaseRate: f64,
+    pub discountAllowed: bool,
     #[serde(skip_serializing_if = "Option::is_none")]
-    wallet: Option<String>,
+    pub wallet: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    rules: Option<String>,
+    pub rules: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    rulesHasDate: Option<bool>,
+    pub rulesHasDate: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    clarifications: Option<String>,
+    pub clarifications: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    eachWayDivisor: Option<f64>,
+    pub eachWayDivisor: Option<f64>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    lineRangeInfo: Option<MarketLineRangeInfo>,
+    pub lineRangeInfo: Option<MarketLineRangeInfo>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    raceType: Option<String>,
+    pub raceType: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    priceLadderDescription: Option<PriceLadderDescription>,
+    pub priceLadderDescription: Option<PriceLadderDescription>,
 }
 /// Market Rates
 #[derive(Debug, Deserialize, Serialize)]
 pub struct MarketRates {
-    marketBaseRate: f64,
-    discountAllowed: bool,
+    pub marketBaseRate: f64,
+    pub discountAllowed: bool,
 }
 /// Market Licence
 #[derive(Debug, Deserialize, Serialize)]
 pub struct MarketLicence {
-    wallet: String,
+    pub wallet: String,
     #[serde(skip_serializing_if = "Option::is_none")]
-    rules: Option<String>,
+    pub rules: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    rulesHasDate: Option<bool>,
+    pub rulesHasDate: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    clarifications: Option<String>,
+    pub clarifications: Option<String>,
 }
 /// Market Line and Range Info
 #[derive(Debug, Deserialize, Serialize)]
 pub struct MarketLineRangeInfo {
-    maxUnitValue: f64,
-    minUnitValue: f64,
-    interval: f64,
-    marketUnit: String,
+    pub maxUnitValue: f64,
+    pub minUnitValue: f64,
+    pub interval: f64,
+    pub marketUnit: String,
 }
 #[derive(Debug, Deserialize, Serialize)]
 pub struct PriceSize {
-    price: Price,
-    size: Size,
+    pub price: Price,
+    pub size: Size,
 }
 /// A container representing search results.
 #[derive(Debug, Deserialize, Serialize)]
 pub struct CurrentOrderSummaryReport {
-    currentOrders: Vec<CurrentOrderSummary>,
-    moreAvailable: bool,
+    pub currentOrders: Vec<CurrentOrderSummary>,
+    pub moreAvailable: bool,
 }
 /// Summary of a current order.
 #[derive(Debug, Deserialize, Serialize)]
 pub struct CurrentOrderSummary {
-    betId: BetId,
-    marketId: MarketId,
-    selectionId: SelectionId,
-    handicap: Handicap,
-    priceSize: PriceSize,
-    bspLiability: Size,
-    side: String,
-    status: String,
-    persistenceType: String,
-    orderType: String,
-    placedDate: DateTime<Utc>,
-    matchedDate: DateTime<Utc>,
+    pub betId: BetId,
+    pub marketId: MarketId,
+    pub selectionId: SelectionId,
+    pub handicap: Handicap,
+    pub priceSize: PriceSize,
+    pub bspLiability: Size,
+    pub side: String,
+    pub status: String,
+    pub persistenceType: String,
+    pub orderType: String,
+    pub placedDate: DateTime<Utc>,
+    pub matchedDate: DateTime<Utc>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    averagePriceMatched: Option<Price>,
+    pub averagePriceMatched: Option<Price>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    sizeMatched: Option<Size>,
+    pub sizeMatched: Option<Size>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    sizeRemaining: Option<Size>,
+    pub sizeRemaining: Option<Size>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    sizeLapsed: Option<Size>,
+    pub sizeLapsed: Option<Size>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    sizeCancelled: Option<Size>,
+    pub sizeCancelled: Option<Size>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    sizeVoided: Option<Size>,
+    pub sizeVoided: Option<Size>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    regulatorAuthCode: Option<String>,
+    pub regulatorAuthCode: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    regulatorCode: Option<String>,
+    pub regulatorCode: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    customerOrderRef: Option<String>,
+    pub customerOrderRef: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    customerStrategyRef: Option<String>,
+    pub customerStrategyRef: Option<String>,
 }
 /// Summary of a cleared order.
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ClearedOrderSummary {
     #[serde(skip_serializing_if = "Option::is_none")]
-    eventTypeId: Option<EventTypeId>,
+    pub eventTypeId: Option<EventTypeId>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    eventId: Option<EventId>,
+    pub eventId: Option<EventId>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    marketId: Option<MarketId>,
+    pub marketId: Option<MarketId>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    selectionId: Option<SelectionId>,
+    pub selectionId: Option<SelectionId>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    handicap: Option<Handicap>,
+    pub handicap: Option<Handicap>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    betId: Option<BetId>,
+    pub betId: Option<BetId>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    placedDate: Option<DateTime<Utc>>,
+    pub placedDate: Option<DateTime<Utc>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    persistenceType: Option<String>,
+    pub persistenceType: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    orderType: Option<String>,
+    pub orderType: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    side: Option<String>,
+    pub side: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    itemDescription: Option<ItemDescription>,
+    pub itemDescription: Option<ItemDescription>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    betOutcome: Option<String>,
+    pub betOutcome: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    priceRequested: Option<Price>,
+    pub priceRequested: Option<Price>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    settledDate: Option<DateTime<Utc>>,
+    pub settledDate: Option<DateTime<Utc>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    lastMatchedDate: Option<DateTime<Utc>>,
+    pub lastMatchedDate: Option<DateTime<Utc>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    betCount: Option<i32>,
+    pub betCount: Option<i32>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    commission: Option<Size>,
+    pub commission: Option<Size>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    priceMatched: Option<Price>,
+    pub priceMatched: Option<Price>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    priceReduced: Option<bool>,
+    pub priceReduced: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    sizeSettled: Option<Size>,
+    pub sizeSettled: Option<Size>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    profit: Option<Size>,
+    pub profit: Option<Size>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    sizeCancelled: Option<Size>,
+    pub sizeCancelled: Option<Size>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    customerOrderRef: Option<String>,
+    pub customerOrderRef: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    customerStrategyRef: Option<String>,
+    pub customerStrategyRef: Option<String>,
 }
 /// A container representing search results.
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ClearedOrderSummaryReport {
-    clearedOrders: Vec<ClearedOrderSummary>,
-    moreAvailable: bool,
+    pub clearedOrders: Vec<ClearedOrderSummary>,
+    pub moreAvailable: bool,
 }
 /// This object contains some text which may be useful to render a betting history view. It offers no long-term warranty as to the correctness of the text.
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ItemDescription {
     #[serde(skip_serializing_if = "Option::is_none")]
-    eventTypeDesc: Option<String>,
+    pub eventTypeDesc: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    eventDesc: Option<String>,
+    pub eventDesc: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    marketDesc: Option<String>,
+    pub marketDesc: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    marketType: Option<String>,
+    pub marketType: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    marketStartTime: Option<DateTime<Utc>>,
+    pub marketStartTime: Option<DateTime<Utc>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    runnerDesc: Option<String>,
+    pub runnerDesc: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    numberOfWinners: Option<i32>,
+    pub numberOfWinners: Option<i32>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    eachWayDivisor: Option<f64>,
+    pub eachWayDivisor: Option<f64>,
 }
 /// This object contains the unique identifier for a runner
 #[derive(Debug, Deserialize, Serialize)]
 pub struct RunnerId {
-    marketId: MarketId,
-    selectionId: SelectionId,
+    pub marketId: MarketId,
+    pub selectionId: SelectionId,
     #[serde(skip_serializing_if = "Option::is_none")]
-    handicap: Option<Handicap>,
+    pub handicap: Option<Handicap>,
 }
 /// Instruction to place a new order
 #[derive(Debug, Deserialize, Serialize)]
 pub struct PlaceInstruction {
-    orderType: OrderType,
-    selectionId: SelectionId,
+    pub orderType: OrderType,
+    pub selectionId: SelectionId,
     #[serde(skip_serializing_if = "Option::is_none")]
-    handicap: Option<Handicap>,
-    side: Side,
+    pub handicap: Option<Handicap>,
+    pub side: Side,
     #[serde(skip_serializing_if = "Option::is_none")]
-    limitOrder: Option<LimitOrder>,
+    pub limitOrder: Option<LimitOrder>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    limitOnCloseOrder: Option<LimitOnCloseOrder>,
+    pub limitOnCloseOrder: Option<LimitOnCloseOrder>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    marketOnCloseOrder: Option<MarketOnCloseOrder>,
+    pub marketOnCloseOrder: Option<MarketOnCloseOrder>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    customerOrderRef: Option<String>,
+    pub customerOrderRef: Option<String>,
 }
 #[derive(Debug, Deserialize, Serialize)]
 pub struct PlaceExecutionReport {
     #[serde(skip_serializing_if = "Option::is_none")]
-    customerRef: Option<String>,
-    status: String,
+    pub customerRef: Option<String>,
+    pub status: String,
     #[serde(skip_serializing_if = "Option::is_none")]
-    errorCode: Option<String>,
+    pub errorCode: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    marketId: Option<MarketId>,
+    pub marketId: Option<MarketId>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    instructionReports: Option<Vec<PlaceInstructionReport>>,
+    pub instructionReports: Option<Vec<PlaceInstructionReport>>,
 }
 /// Place a new LIMIT order (simple exchange bet for immediate execution)
 #[derive(Debug, Deserialize, Serialize)]
 pub struct LimitOrder {
     #[serde(skip_serializing_if = "Option::is_none")]
-    size: Option<Size>,
-    price: Price,
+    pub size: Option<Size>,
+    pub price: Price,
     #[serde(skip_serializing_if = "Option::is_none")]
-    persistenceType: Option<PersistenceType>,
+    pub persistenceType: Option<PersistenceType>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    timeInForce: Option<TimeInForce>,
+    pub timeInForce: Option<TimeInForce>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    minFillSize: Option<Size>,
+    pub minFillSize: Option<Size>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    betTargetType: Option<BetTargetType>,
+    pub betTargetType: Option<BetTargetType>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    betTargetSize: Option<Size>,
+    pub betTargetSize: Option<Size>,
 }
 /// Place a new LIMIT_ON_CLOSE bet
 #[derive(Debug, Deserialize, Serialize)]
 pub struct LimitOnCloseOrder {
-    liability: Size,
-    price: Price,
+    pub liability: Size,
+    pub price: Price,
 }
 /// Place a new MARKET_ON_CLOSE bet
 #[derive(Debug, Deserialize, Serialize)]
 pub struct MarketOnCloseOrder {
-    liability: Size,
+    pub liability: Size,
 }
 /// Response to a PlaceInstruction
 #[derive(Debug, Deserialize, Serialize)]
 pub struct PlaceInstructionReport {
-    status: String,
+    pub status: String,
     #[serde(skip_serializing_if = "Option::is_none")]
-    errorCode: Option<String>,
+    pub errorCode: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    orderStatus: Option<OrderStatus>,
-    instruction: PlaceInstruction,
+    pub orderStatus: Option<OrderStatus>,
+    pub instruction: PlaceInstruction,
     #[serde(skip_serializing_if = "Option::is_none")]
-    betId: Option<String>,
+    pub betId: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    placedDate: Option<DateTime<Utc>>,
+    pub placedDate: Option<DateTime<Utc>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    averagePriceMatched: Option<Price>,
+    pub averagePriceMatched: Option<Price>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    sizeMatched: Option<Size>,
+    pub sizeMatched: Option<Size>,
 }
 /// Instruction to fully or partially cancel an order (only applies to LIMIT orders)
 #[derive(Debug, Deserialize, Serialize)]
 pub struct CancelInstruction {
-    betId: String,
+    pub betId: String,
     #[serde(skip_serializing_if = "Option::is_none")]
-    sizeReduction: Option<Size>,
+    pub sizeReduction: Option<Size>,
 }
 #[derive(Debug, Deserialize, Serialize)]
 pub struct CancelExecutionReport {
     #[serde(skip_serializing_if = "Option::is_none")]
-    customerRef: Option<String>,
-    status: String,
+    pub customerRef: Option<String>,
+    pub status: String,
     #[serde(skip_serializing_if = "Option::is_none")]
-    errorCode: Option<String>,
+    pub errorCode: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    marketId: Option<MarketId>,
+    pub marketId: Option<MarketId>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    instructionReports: Option<Vec<CancelInstructionReport>>,
+    pub instructionReports: Option<Vec<CancelInstructionReport>>,
 }
 /// Instruction to replace a LIMIT or LIMIT_ON_CLOSE order at a new price. Original order will be cancelled and a new order placed at the new price for the remaining stake.
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ReplaceInstruction {
-    betId: String,
-    newPrice: Price,
+    pub betId: String,
+    pub newPrice: Price,
 }
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ReplaceExecutionReport {
     #[serde(skip_serializing_if = "Option::is_none")]
-    customerRef: Option<String>,
-    status: String,
+    pub customerRef: Option<String>,
+    pub status: String,
     #[serde(skip_serializing_if = "Option::is_none")]
-    errorCode: Option<String>,
+    pub errorCode: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    marketId: Option<MarketId>,
+    pub marketId: Option<MarketId>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    instructionReports: Option<Vec<ReplaceInstructionReport>>,
+    pub instructionReports: Option<Vec<ReplaceInstructionReport>>,
 }
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ReplaceInstructionReport {
-    status: String,
+    pub status: String,
     #[serde(skip_serializing_if = "Option::is_none")]
-    errorCode: Option<String>,
+    pub errorCode: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    cancelInstructionReport: Option<CancelInstructionReport>,
+    pub cancelInstructionReport: Option<CancelInstructionReport>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    placeInstructionReport: Option<PlaceInstructionReport>,
+    pub placeInstructionReport: Option<PlaceInstructionReport>,
 }
 #[derive(Debug, Deserialize, Serialize)]
 pub struct CancelInstructionReport {
-    status: String,
+    pub status: String,
     #[serde(skip_serializing_if = "Option::is_none")]
-    errorCode: Option<String>,
+    pub errorCode: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    instruction: Option<CancelInstruction>,
-    sizeCancelled: Size,
-    cancelledDate: DateTime<Utc>,
+    pub instruction: Option<CancelInstruction>,
+    pub sizeCancelled: Size,
+    pub cancelledDate: DateTime<Utc>,
 }
 /// Instruction to update LIMIT bet's persistence of an order that do not affect exposure
 #[derive(Debug, Deserialize, Serialize)]
 pub struct UpdateInstruction {
-    betId: String,
-    newPersistenceType: PersistenceType,
+    pub betId: String,
+    pub newPersistenceType: PersistenceType,
 }
 #[derive(Debug, Deserialize, Serialize)]
 pub struct UpdateExecutionReport {
     #[serde(skip_serializing_if = "Option::is_none")]
-    customerRef: Option<String>,
-    status: String,
+    pub customerRef: Option<String>,
+    pub status: String,
     #[serde(skip_serializing_if = "Option::is_none")]
-    errorCode: Option<String>,
+    pub errorCode: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    marketId: Option<MarketId>,
+    pub marketId: Option<MarketId>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    instructionReports: Option<Vec<UpdateInstructionReport>>,
+    pub instructionReports: Option<Vec<UpdateInstructionReport>>,
 }
 #[derive(Debug, Deserialize, Serialize)]
 pub struct UpdateInstructionReport {
-    status: String,
+    pub status: String,
     #[serde(skip_serializing_if = "Option::is_none")]
-    errorCode: Option<String>,
-    instruction: UpdateInstruction,
+    pub errorCode: Option<String>,
+    pub instruction: UpdateInstruction,
 }
 /// Selection criteria of the returning price data
 #[derive(Debug, Deserialize, Serialize)]
 pub struct PriceProjection {
     #[serde(skip_serializing_if = "Option::is_none")]
-    priceData: Option<Vec<PriceData>>,
+    pub priceData: Option<Vec<PriceData>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    exBestOffersOverrides: Option<ExBestOffersOverrides>,
+    pub exBestOffersOverrides: Option<ExBestOffersOverrides>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    virtualise: Option<bool>,
+    pub virtualise: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    rolloverStakes: Option<bool>,
+    pub rolloverStakes: Option<bool>,
 }
 /// Options to alter the default representation of best offer prices
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ExBestOffersOverrides {
     #[serde(skip_serializing_if = "Option::is_none")]
-    bestPricesDepth: Option<i32>,
+    pub bestPricesDepth: Option<i32>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    rollupModel: Option<RollupModel>,
+    pub rollupModel: Option<RollupModel>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    rollupLimit: Option<i32>,
+    pub rollupLimit: Option<i32>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    rollupLiabilityThreshold: Option<f64>,
+    pub rollupLiabilityThreshold: Option<f64>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    rollupLiabilityFactor: Option<i32>,
+    pub rollupLiabilityFactor: Option<i32>,
 }
 /// Profit and loss in a market
 #[derive(Debug, Deserialize, Serialize)]
 pub struct MarketProfitAndLoss {
     #[serde(skip_serializing_if = "Option::is_none")]
-    marketId: Option<String>,
+    pub marketId: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    commissionApplied: Option<f64>,
+    pub commissionApplied: Option<f64>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    profitAndLosses: Option<Vec<RunnerProfitAndLoss>>,
+    pub profitAndLosses: Option<Vec<RunnerProfitAndLoss>>,
 }
 /// Profit and loss if selection is wins or loses
 #[derive(Debug, Deserialize, Serialize)]
 pub struct RunnerProfitAndLoss {
     #[serde(skip_serializing_if = "Option::is_none")]
-    selectionId: Option<SelectionId>,
+    pub selectionId: Option<SelectionId>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    ifWin: Option<f64>,
+    pub ifWin: Option<f64>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    ifLose: Option<f64>,
+    pub ifLose: Option<f64>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    ifPlace: Option<f64>,
+    pub ifPlace: Option<f64>,
 }
 /// Description of the price ladder type and any related data.
 #[derive(Debug, Deserialize, Serialize)]
 pub struct PriceLadderDescription {
-    r#type: PriceLadderType,
+    pub r#type: PriceLadderType,
 }
 /// Description of a markets key line selection, comprising the selectionId and handicap of the team it is applied to.
 #[derive(Debug, Deserialize, Serialize)]
 pub struct KeyLineSelection {
-    selectionId: SelectionId,
-    handicap: Handicap,
+    pub selectionId: SelectionId,
+    pub handicap: Handicap,
 }
 /// A list of KeyLineSelection objects describing the key line for the market
 #[derive(Debug, Deserialize, Serialize)]
 pub struct KeyLineDescription {
-    keyLine: Vec<KeyLineSelection>,
+    pub keyLine: Vec<KeyLineSelection>,
 }
 /// Wrapper type that contains accounts exposure limits for a market group type. If default limit exists for group type, defaultLimit value will be populated. Group limits to return can be controller by marketGroupFilter parameter (see listExposureLimitsForMarketGroups operation).
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ExposureLimitsForMarketGroups {
-    marketGroupType: MarketGroupType,
+    pub marketGroupType: MarketGroupType,
     #[serde(skip_serializing_if = "Option::is_none")]
-    defaultLimit: Option<ExposureLimit>,
+    pub defaultLimit: Option<ExposureLimit>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    groupLimits: Option<Vec<MarketGroupExposureLimit>>,
+    pub groupLimits: Option<Vec<MarketGroupExposureLimit>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    blockedMarketGroups: Option<Vec<MarketGroupId>>,
+    pub blockedMarketGroups: Option<Vec<MarketGroupId>>,
 }
 /// Represents a market group
 #[derive(Debug, Deserialize, Serialize)]
 pub struct MarketGroup {
-    r#type: MarketGroupType,
-    r#id: MarketGroupId,
+    pub r#type: MarketGroupType,
+    pub r#id: MarketGroupId,
 }
 /// Container type for market group ID
 #[derive(Debug, Deserialize, Serialize)]
 pub struct MarketGroupId {
     #[serde(skip_serializing_if = "Option::is_none")]
-    eventId: Option<i64>,
+    pub eventId: Option<i64>,
 }
 /// Action that should be execute when limit is breached
 #[derive(Debug, Deserialize, Serialize)]
 pub struct LimitBreachAction {
-    actionType: LimitBreachActionType,
+    pub actionType: LimitBreachActionType,
 }
 /// Container type for a group exposure limit
 #[derive(Debug, Deserialize, Serialize)]
 pub struct MarketGroupExposureLimit {
-    groupId: MarketGroupId,
-    limit: ExposureLimit,
+    pub groupId: MarketGroupId,
+    pub limit: ExposureLimit,
 }
 /// Exposure limit and limit breach action. Not populating one of total or matched parameters indicates that no limit should be set for that exposure value.  A special use of this type is when none of its parameters are populated, this can be used to override default limit to "no limit" for a specific instance of market group (see setExposureLimitForMarketGroup operation)
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ExposureLimit {
     #[serde(skip_serializing_if = "Option::is_none")]
-    matched: Option<f64>,
+    pub matched: Option<f64>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    total: Option<f64>,
+    pub total: Option<f64>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    limitBreachAction: Option<LimitBreachAction>,
+    pub limitBreachAction: Option<LimitBreachAction>,
 }

@@ -94,58 +94,61 @@ fn get_session_token() -> Result<String, AnyError> {
     }
 }
 
-use generated_api::{listMarketBook, MarketBook, MarketId};
-fn try_lmb(
-    session_token: String,
-    market_id: MarketId,
-) -> Result<Vec<MarketBook>, AnyError> {
+fn make_request_builder(
+    session_token: &str,
+) -> Result<reqwest::RequestBuilder, AnyError> {
     let app_key = fs::read_to_string(APPKEYFILE)?.replace("\n", "");
-
     let proxy = reqwest::Proxy::all("socks5h://127.0.0.1:40001")?;
     let cl: Client = Client::builder().proxy(proxy).build()?;
 
-    // TODO handle exceptions
-    let rb: reqwest::RequestBuilder = cl
+    Ok(cl
         .post(JSONRPC_URI)
         .header("X-Application", app_key)
-        .header("X-Authentication", session_token);
-
-    listMarketBook(
-        rb,
-        vec![market_id],
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-    )
+        .header("X-Authentication", session_token))
 }
+
+use generated_api::*;
 
 fn main() -> Result<(), AnyError> {
     env_logger::Builder::from_default_env()
         .target(env_logger::Target::Stderr)
         .init();
 
-    match get_session_token() {
-        Ok(x) => {
-            let books: Vec<MarketBook> = try_lmb(x, "1.156586178".to_owned())?;
-            info!("{:?}", books);
-            let s: String = serde_json::to_string(&books).expect("whatever");
-            println!("{}", s);
-            Ok(())
-        }
-        Err(e) => {
-            if let AnyError::Reqwest(f) = e {
-                error!("got error {}", f);
-            } else {
-                error!("got error {:?}", e);
-            }
-            Err(AnyError::Other)
-        }
-    }
+    let session_token = get_session_token()?;
+
+    let catalogues: Vec<MarketCatalogue> = listMarketCatalogue(
+        make_request_builder(&session_token)?,
+        MarketFilter::default(),
+        None,
+        None,
+        10,
+        None,
+    )?;
+    info!("{:?}", catalogues);
+
+    let market_ids: Vec<MarketId> = catalogues
+        .iter()
+        .map(|x: &MarketCatalogue| x.marketId.clone())
+        .collect();
+
+    let books: Vec<MarketBook> = listMarketBook(
+        make_request_builder(&session_token)?,
+        market_ids,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+    )?;
+
+    info!("{:?}", books);
+
+    let s: String = serde_json::to_string(&books).expect("whatever");
+    println!("{}", s);
+    Ok(())
 }

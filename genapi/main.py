@@ -547,9 +547,9 @@ def generate_rust_data_types(data_types: List[DataType]) -> str:
             # TODO: this is super ugly. seriously?
             if x[1].startswith("Option<"):
                 return f"""#[serde(skip_serializing_if = "Option::is_none")]
-{x[0]}: {x[1]}"""
+pub {x[0]}: {x[1]}"""
 
-            return f"{x[0]}: {x[1]}"
+            return f"pub {x[0]}: {x[1]}"
 
         formatted_params: str = ", \n".join(
             format_param(x) for x in params_converted
