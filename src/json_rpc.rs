@@ -35,33 +35,3 @@ impl<T> RpcResponse<T> {
         self.result
     }
 }
-
-// listEventTypes Request
-// [
-//     {
-//         "jsonrpc": "2.0",
-//         "method": "SportsAPING/v1.0/listEventTypes",
-//         "params": {
-//             "filter": {}
-//         },
-//         "id": 1
-//     }
-// ]
-// listEventTypes Response
-// [
-//     {
-//         "jsonrpc": "2.0",
-//         "result": [
-//             {
-//                 "eventType": {
-//                     "id": "468328",
-//                     "name": "Handball"
-//                 },
-//                 "marketCount": 11
-//             },
-//             ... removed
-//         ],
-//         "id": 1
-//     }
-// ]
-//

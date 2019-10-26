@@ -15,7 +15,6 @@ use crate::json_rpc::{RpcRequest, RpcResponse};
 pub enum AnyError {
     Io(std::io::Error),
     Reqwest(reqwest::Error),
-    SerdeJson(serde_json::Error),
     BFLoginFailure(String),
     General(String),
     Other,
@@ -32,12 +31,6 @@ impl From<std::io::Error> for AnyError {
 impl From<reqwest::Error> for AnyError {
     fn from(e: reqwest::Error) -> Self {
         AnyError::Reqwest(e)
-    }
-}
-
-impl From<serde_json::Error> for AnyError {
-    fn from(e: serde_json::Error) -> Self {
-        AnyError::SerdeJson(e)
     }
 }
 

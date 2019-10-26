@@ -573,6 +573,7 @@ def generate_rust_functions(operations: List[Operation]) -> str:
 
     structs: List[str] = []
     functions: List[str] = []
+    fn_signatures: List[str] = []
     for operation in operations:  # type: Operation
         # print(operation)
 
@@ -583,8 +584,7 @@ def generate_rust_functions(operations: List[Operation]) -> str:
             params_converted.append((name, _type))
 
         formatted_params_args: str = ", ".join(
-            ["rb: RequestBuilder"]
-            + [f"{x[0]}: {x[1]}" for x in params_converted]
+            ["&self"] + [f"{x[0]}: {x[1]}" for x in params_converted]
         )
 
         resp_type: str = python_type_to_rust_type(
@@ -623,8 +623,7 @@ let rpc_request: RpcRequest<{struct_name}> = RpcRequest::new(
     \"SportsAPING/v1.0/{operation.name}\".to_owned(),
     req
 );
-let resp: RpcResponse<{resp_type}> = rb.json(&rpc_request).send()?.json()?;
-Ok(resp.into_inner())
+self.req(rpc_request).map(|x| x.into_inner())
 """
         else:
             # TODO this smells, repetition
@@ -633,18 +632,26 @@ let rpc_request: RpcRequest<()> = RpcRequest::new(
     \"SportsAPING/v1.0/{operation.name}\".to_owned(),
     ()
 );
-let resp: RpcResponse<{resp_type}> = rb.json(&rpc_request).send()?.json()?;
-Ok(resp.into_inner())
+self.req(rpc_request).map(|x| x.into_inner())
 """
 
-        functions.append(
-            f"""pub fn {operation.name}({formatted_params_args}) ->
-Result<{resp_type}, AnyError> {{
-    {function_interior}
-}}"""
-        )
+        fn_signature = f"""fn {operation.name}({formatted_params_args}) ->
+Result<{resp_type}, AnyError>"""
 
-    return "\n\n".join(structs + functions)
+        fn_signatures.append(fn_signature + ";")
+        functions.append(f"{fn_signature} {{ {function_interior} }}")
+
+    structs_out = "\n".join(structs)
+    fn_signatures_out = "\n".join(fn_signatures)
+    functions_out = "\n".join(functions)
+
+    return "\n".join(
+        [
+            structs_out,
+            f"pub trait BFApiCalls {{ {fn_signatures_out} }}",
+            f"impl BFApiCalls for crate::BFClient {{ {functions_out} }}",
+        ]
+    )
 
 
 def main() -> None:
@@ -662,9 +669,8 @@ def main() -> None:
     print("use std::collections::HashMap;")
     print("use chrono::{DateTime, Utc};")
     print("use serde::{Deserialize, Serialize};")
-    print("use crate::json_rpc::{RpcRequest, RpcResponse};")
+    print("use crate::json_rpc::RpcRequest;")
     print("use crate::AnyError;")
-    print("use reqwest::RequestBuilder;")
     print(generate_rust_functions(aping.operations))
     print(generate_rust_types(aping.simple_types))
     print(generate_rust_data_types(aping.data_types))
