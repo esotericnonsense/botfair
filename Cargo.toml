@@ -1,14 +1,22 @@
 [package]
-name = "schroedinger"
+name = "betfair"
 version = "0.1.0"
 authors = ["Daniel Edgecumbe <git@esotericnonsense.com>"]
 edition = "2018"
 
 [dependencies]
 log = "0.4"
-env_logger = "0.7"
+
+# Used for the actual API calls.
+# rustls-tls required for client certificate support.
+# socks used to enable the use of a socks5 proxy.
 reqwest = { "version" = "0.9", "features" = ["rustls-tls", "socks"] }
+
+# Used to generate random identifiers for each RPC call.
 rand = "0.7"
+
+# Used for serialization/deserialization of objects.
 serde = "1"
-serde_json = "1"
+
+# Some of the BF datatypes require datetimes.
 chrono = { "version" = "0.4", "features" = ["serde"] }

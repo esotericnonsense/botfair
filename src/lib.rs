@@ -6,13 +6,14 @@ use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 use std::sync::{Arc, RwLock};
 
-mod generated_api;
+// TODO this should not be public, re-export relevant parts
+pub mod generated_api;
 mod json_rpc;
 
 use crate::json_rpc::{RpcRequest, RpcResponse};
 
 #[derive(Debug)]
-pub enum AnyError {
+pub enum Error {
     Io(std::io::Error),
     Reqwest(reqwest::Error),
     BFLoginFailure(String),
@@ -20,17 +21,17 @@ pub enum AnyError {
     Other,
 }
 
-type Result<T> = std::result::Result<T, AnyError>;
+pub type Result<T> = std::result::Result<T, Error>;
 
-impl From<std::io::Error> for AnyError {
+impl From<std::io::Error> for Error {
     fn from(e: std::io::Error) -> Self {
-        AnyError::Io(e)
+        Error::Io(e)
     }
 }
 
-impl From<reqwest::Error> for AnyError {
+impl From<reqwest::Error> for Error {
     fn from(e: reqwest::Error) -> Self {
-        AnyError::Reqwest(e)
+        Error::Reqwest(e)
     }
 }
 
@@ -55,7 +56,7 @@ pub struct BFCredentials {
 }
 
 impl BFCredentials {
-    fn new(
+    pub fn new(
         username: String,
         password: String,
         pfx_path: String,
@@ -151,7 +152,7 @@ impl BFClient {
         rpc_request: &RpcRequest<T1>,
     ) -> Result<RpcResponse<T2>> {
         match maybe_token {
-            None => Err(AnyError::General(
+            None => Err(Error::General(
                 "req_internal: must login first".to_owned(),
             )),
             Some(token) => {
@@ -241,61 +242,10 @@ impl BFClient {
 
         match login_response.sessionToken {
             Some(token) => Ok(token),
-            None => Err(AnyError::BFLoginFailure(format!(
+            None => Err(Error::BFLoginFailure(format!(
                 "loginStatus: {}",
                 login_response.loginStatus
             ))),
         }
     }
-}
-
-use generated_api::*;
-
-fn main() -> Result<()> {
-    env_logger::Builder::from_default_env()
-        .target(env_logger::Target::Stderr)
-        .init();
-
-    const USER_PATH: &str = "/home/esotericnonsense/betfair/betfair-user";
-    const PASS_PATH: &str = "/home/esotericnonsense/betfair/betfair-pass";
-    const PFX_PATH: &str = "/home/esotericnonsense/betfair/identity.pfx";
-    const APPKEY_PATH: &str = "/home/esotericnonsense/betfair/betfair-app-key";
-    const PROXY_URI: &str = "socks5h://127.0.0.1:40001";
-
-    let username = std::fs::read_to_string(USER_PATH)?.replace("\n", "");
-    let password = std::fs::read_to_string(PASS_PATH)?.replace("\n", "");
-    let app_key = std::fs::read_to_string(APPKEY_PATH)?.replace("\n", "");
-    let bf_creds =
-        BFCredentials::new(username, password, PFX_PATH.to_owned(), app_key)?;
-    let bf_client = BFClient::new(bf_creds, Some(PROXY_URI.to_owned()))?;
-
-    info!("Created client!");
-
-    let catalogues: Vec<MarketCatalogue> = bf_client.listMarketCatalogue(
-        MarketFilter::default(),
-        None,
-        None,
-        10,
-        None,
-    )?;
-    // for catalogue in catalogues.iter() {
-    //     println!(
-    //         "{} {} {:?}",
-    //         catalogue.marketId, catalogue.marketName, catalogue.totalMatched
-    //     );
-    // }
-
-    let market_ids: Vec<MarketId> = catalogues
-        .iter()
-        .map(|x: &MarketCatalogue| x.marketId.clone())
-        .collect();
-
-    let books: Vec<MarketBook> = bf_client.listMarketBook(
-        market_ids, None, None, None, None, None, None, None, None, None, None,
-    )?;
-    // println!("{:?}", books);
-
-    let s: String = serde_json::to_string(&books).expect("whatever");
-    println!("{}", s);
-    Ok(())
 }

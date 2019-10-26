@@ -636,7 +636,7 @@ self.req(rpc_request).map(|x| x.into_inner())
 """
 
         fn_signature = f"""fn {operation.name}({formatted_params_args}) ->
-Result<{resp_type}, AnyError>"""
+Result<{resp_type}>"""
 
         fn_signatures.append(fn_signature + ";")
         functions.append(f"{fn_signature} {{ {function_interior} }}")
@@ -670,7 +670,7 @@ def main() -> None:
     print("use chrono::{DateTime, Utc};")
     print("use serde::{Deserialize, Serialize};")
     print("use crate::json_rpc::RpcRequest;")
-    print("use crate::AnyError;")
+    print("use crate::Result;")
     print(generate_rust_functions(aping.operations))
     print(generate_rust_types(aping.simple_types))
     print(generate_rust_data_types(aping.data_types))

@@ -5,10 +5,9 @@
 #![allow(non_snake_case)]
 #![allow(unused_variables)]
 #![allow(dead_code)]
-use crate::json_rpc::{RpcRequest, RpcResponse};
-use crate::AnyError;
+use crate::json_rpc::RpcRequest;
+use crate::Result;
 use chrono::{DateTime, Utc};
-use reqwest::RequestBuilder;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 #[derive(Serialize)]
@@ -17,144 +16,41 @@ pub struct listEventTypesRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub locale: Option<String>,
 }
-
-pub fn listEventTypes(
-    rb: RequestBuilder,
-    filter: MarketFilter,
-    locale: Option<String>,
-) -> Result<Vec<EventTypeResult>, AnyError> {
-    let req: listEventTypesRequest = listEventTypesRequest { filter, locale };
-    let rpc_request: RpcRequest<listEventTypesRequest> =
-        RpcRequest::new("SportsAPING/v1.0/listEventTypes".to_owned(), req);
-    let resp: RpcResponse<Vec<EventTypeResult>> =
-        rb.json(&rpc_request).send()?.json()?;
-    Ok(resp.into_inner())
-}
-
 #[derive(Serialize)]
 pub struct listCompetitionsRequest {
     pub filter: MarketFilter,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub locale: Option<String>,
 }
-
-pub fn listCompetitions(
-    rb: RequestBuilder,
-    filter: MarketFilter,
-    locale: Option<String>,
-) -> Result<Vec<CompetitionResult>, AnyError> {
-    let req: listCompetitionsRequest =
-        listCompetitionsRequest { filter, locale };
-    let rpc_request: RpcRequest<listCompetitionsRequest> =
-        RpcRequest::new("SportsAPING/v1.0/listCompetitions".to_owned(), req);
-    let resp: RpcResponse<Vec<CompetitionResult>> =
-        rb.json(&rpc_request).send()?.json()?;
-    Ok(resp.into_inner())
-}
-
 #[derive(Serialize)]
 pub struct listTimeRangesRequest {
     pub filter: MarketFilter,
     pub granularity: TimeGranularity,
 }
-
-pub fn listTimeRanges(
-    rb: RequestBuilder,
-    filter: MarketFilter,
-    granularity: TimeGranularity,
-) -> Result<Vec<TimeRangeResult>, AnyError> {
-    let req: listTimeRangesRequest = listTimeRangesRequest {
-        filter,
-        granularity,
-    };
-    let rpc_request: RpcRequest<listTimeRangesRequest> =
-        RpcRequest::new("SportsAPING/v1.0/listTimeRanges".to_owned(), req);
-    let resp: RpcResponse<Vec<TimeRangeResult>> =
-        rb.json(&rpc_request).send()?.json()?;
-    Ok(resp.into_inner())
-}
-
 #[derive(Serialize)]
 pub struct listEventsRequest {
     pub filter: MarketFilter,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub locale: Option<String>,
 }
-
-pub fn listEvents(
-    rb: RequestBuilder,
-    filter: MarketFilter,
-    locale: Option<String>,
-) -> Result<Vec<EventResult>, AnyError> {
-    let req: listEventsRequest = listEventsRequest { filter, locale };
-    let rpc_request: RpcRequest<listEventsRequest> =
-        RpcRequest::new("SportsAPING/v1.0/listEvents".to_owned(), req);
-    let resp: RpcResponse<Vec<EventResult>> =
-        rb.json(&rpc_request).send()?.json()?;
-    Ok(resp.into_inner())
-}
-
 #[derive(Serialize)]
 pub struct listMarketTypesRequest {
     pub filter: MarketFilter,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub locale: Option<String>,
 }
-
-pub fn listMarketTypes(
-    rb: RequestBuilder,
-    filter: MarketFilter,
-    locale: Option<String>,
-) -> Result<Vec<MarketTypeResult>, AnyError> {
-    let req: listMarketTypesRequest =
-        listMarketTypesRequest { filter, locale };
-    let rpc_request: RpcRequest<listMarketTypesRequest> =
-        RpcRequest::new("SportsAPING/v1.0/listMarketTypes".to_owned(), req);
-    let resp: RpcResponse<Vec<MarketTypeResult>> =
-        rb.json(&rpc_request).send()?.json()?;
-    Ok(resp.into_inner())
-}
-
 #[derive(Serialize)]
 pub struct listCountriesRequest {
     pub filter: MarketFilter,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub locale: Option<String>,
 }
-
-pub fn listCountries(
-    rb: RequestBuilder,
-    filter: MarketFilter,
-    locale: Option<String>,
-) -> Result<Vec<CountryCodeResult>, AnyError> {
-    let req: listCountriesRequest = listCountriesRequest { filter, locale };
-    let rpc_request: RpcRequest<listCountriesRequest> =
-        RpcRequest::new("SportsAPING/v1.0/listCountries".to_owned(), req);
-    let resp: RpcResponse<Vec<CountryCodeResult>> =
-        rb.json(&rpc_request).send()?.json()?;
-    Ok(resp.into_inner())
-}
-
 #[derive(Serialize)]
 pub struct listVenuesRequest {
     pub filter: MarketFilter,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub locale: Option<String>,
 }
-
-pub fn listVenues(
-    rb: RequestBuilder,
-    filter: MarketFilter,
-    locale: Option<String>,
-) -> Result<Vec<VenueResult>, AnyError> {
-    let req: listVenuesRequest = listVenuesRequest { filter, locale };
-    let rpc_request: RpcRequest<listVenuesRequest> =
-        RpcRequest::new("SportsAPING/v1.0/listVenues".to_owned(), req);
-    let resp: RpcResponse<Vec<VenueResult>> =
-        rb.json(&rpc_request).send()?.json()?;
-    Ok(resp.into_inner())
-}
-
 #[derive(Serialize)]
 pub struct listMarketCatalogueRequest {
     pub filter: MarketFilter,
@@ -166,31 +62,6 @@ pub struct listMarketCatalogueRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub locale: Option<String>,
 }
-
-pub fn listMarketCatalogue(
-    rb: RequestBuilder,
-    filter: MarketFilter,
-    marketProjection: Option<Vec<MarketProjection>>,
-    sort: Option<MarketSort>,
-    maxResults: i32,
-    locale: Option<String>,
-) -> Result<Vec<MarketCatalogue>, AnyError> {
-    let req: listMarketCatalogueRequest = listMarketCatalogueRequest {
-        filter,
-        marketProjection,
-        sort,
-        maxResults,
-        locale,
-    };
-    let rpc_request: RpcRequest<listMarketCatalogueRequest> = RpcRequest::new(
-        "SportsAPING/v1.0/listMarketCatalogue".to_owned(),
-        req,
-    );
-    let resp: RpcResponse<Vec<MarketCatalogue>> =
-        rb.json(&rpc_request).send()?.json()?;
-    Ok(resp.into_inner())
-}
-
 #[derive(Serialize)]
 pub struct listMarketBookRequest {
     pub marketIds: Vec<MarketId>,
@@ -215,41 +86,6 @@ pub struct listMarketBookRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub betIds: Option<Vec<BetId>>,
 }
-
-pub fn listMarketBook(
-    rb: RequestBuilder,
-    marketIds: Vec<MarketId>,
-    priceProjection: Option<PriceProjection>,
-    orderProjection: Option<OrderProjection>,
-    matchProjection: Option<MatchProjection>,
-    includeOverallPosition: Option<bool>,
-    partitionMatchedByStrategyRef: Option<bool>,
-    customerStrategyRefs: Option<Vec<String>>,
-    currencyCode: Option<String>,
-    locale: Option<String>,
-    matchedSince: Option<DateTime<Utc>>,
-    betIds: Option<Vec<BetId>>,
-) -> Result<Vec<MarketBook>, AnyError> {
-    let req: listMarketBookRequest = listMarketBookRequest {
-        marketIds,
-        priceProjection,
-        orderProjection,
-        matchProjection,
-        includeOverallPosition,
-        partitionMatchedByStrategyRef,
-        customerStrategyRefs,
-        currencyCode,
-        locale,
-        matchedSince,
-        betIds,
-    };
-    let rpc_request: RpcRequest<listMarketBookRequest> =
-        RpcRequest::new("SportsAPING/v1.0/listMarketBook".to_owned(), req);
-    let resp: RpcResponse<Vec<MarketBook>> =
-        rb.json(&rpc_request).send()?.json()?;
-    Ok(resp.into_inner())
-}
-
 #[derive(Serialize)]
 pub struct listRunnerBookRequest {
     pub marketId: MarketId,
@@ -277,45 +113,6 @@ pub struct listRunnerBookRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub betIds: Option<Vec<BetId>>,
 }
-
-pub fn listRunnerBook(
-    rb: RequestBuilder,
-    marketId: MarketId,
-    selectionId: SelectionId,
-    handicap: Option<f64>,
-    priceProjection: Option<PriceProjection>,
-    orderProjection: Option<OrderProjection>,
-    matchProjection: Option<MatchProjection>,
-    includeOverallPosition: Option<bool>,
-    partitionMatchedByStrategyRef: Option<bool>,
-    customerStrategyRefs: Option<Vec<String>>,
-    currencyCode: Option<String>,
-    locale: Option<String>,
-    matchedSince: Option<DateTime<Utc>>,
-    betIds: Option<Vec<BetId>>,
-) -> Result<Vec<MarketBook>, AnyError> {
-    let req: listRunnerBookRequest = listRunnerBookRequest {
-        marketId,
-        selectionId,
-        handicap,
-        priceProjection,
-        orderProjection,
-        matchProjection,
-        includeOverallPosition,
-        partitionMatchedByStrategyRef,
-        customerStrategyRefs,
-        currencyCode,
-        locale,
-        matchedSince,
-        betIds,
-    };
-    let rpc_request: RpcRequest<listRunnerBookRequest> =
-        RpcRequest::new("SportsAPING/v1.0/listRunnerBook".to_owned(), req);
-    let resp: RpcResponse<Vec<MarketBook>> =
-        rb.json(&rpc_request).send()?.json()?;
-    Ok(resp.into_inner())
-}
-
 #[derive(Serialize)]
 pub struct listCurrentOrdersRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -341,41 +138,6 @@ pub struct listCurrentOrdersRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub recordCount: Option<i32>,
 }
-
-pub fn listCurrentOrders(
-    rb: RequestBuilder,
-    betIds: Option<Vec<BetId>>,
-    marketIds: Option<Vec<MarketId>>,
-    orderProjection: Option<OrderProjection>,
-    customerOrderRefs: Option<Vec<CustomerOrderRef>>,
-    customerStrategyRefs: Option<Vec<CustomerStrategyRef>>,
-    placedDateRange: Option<TimeRange>,
-    dateRange: Option<TimeRange>,
-    orderBy: Option<OrderBy>,
-    sortDir: Option<SortDir>,
-    fromRecord: Option<i32>,
-    recordCount: Option<i32>,
-) -> Result<CurrentOrderSummaryReport, AnyError> {
-    let req: listCurrentOrdersRequest = listCurrentOrdersRequest {
-        betIds,
-        marketIds,
-        orderProjection,
-        customerOrderRefs,
-        customerStrategyRefs,
-        placedDateRange,
-        dateRange,
-        orderBy,
-        sortDir,
-        fromRecord,
-        recordCount,
-    };
-    let rpc_request: RpcRequest<listCurrentOrdersRequest> =
-        RpcRequest::new("SportsAPING/v1.0/listCurrentOrders".to_owned(), req);
-    let resp: RpcResponse<CurrentOrderSummaryReport> =
-        rb.json(&rpc_request).send()?.json()?;
-    Ok(resp.into_inner())
-}
-
 #[derive(Serialize)]
 pub struct listClearedOrdersRequest {
     pub betStatus: BetStatus,
@@ -408,49 +170,6 @@ pub struct listClearedOrdersRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub recordCount: Option<i32>,
 }
-
-pub fn listClearedOrders(
-    rb: RequestBuilder,
-    betStatus: BetStatus,
-    eventTypeIds: Option<Vec<EventTypeId>>,
-    eventIds: Option<Vec<EventId>>,
-    marketIds: Option<Vec<MarketId>>,
-    runnerIds: Option<Vec<RunnerId>>,
-    betIds: Option<Vec<BetId>>,
-    customerOrderRefs: Option<Vec<CustomerOrderRef>>,
-    customerStrategyRefs: Option<Vec<CustomerStrategyRef>>,
-    side: Option<Side>,
-    settledDateRange: Option<TimeRange>,
-    groupBy: Option<GroupBy>,
-    includeItemDescription: Option<bool>,
-    locale: Option<String>,
-    fromRecord: Option<i32>,
-    recordCount: Option<i32>,
-) -> Result<ClearedOrderSummaryReport, AnyError> {
-    let req: listClearedOrdersRequest = listClearedOrdersRequest {
-        betStatus,
-        eventTypeIds,
-        eventIds,
-        marketIds,
-        runnerIds,
-        betIds,
-        customerOrderRefs,
-        customerStrategyRefs,
-        side,
-        settledDateRange,
-        groupBy,
-        includeItemDescription,
-        locale,
-        fromRecord,
-        recordCount,
-    };
-    let rpc_request: RpcRequest<listClearedOrdersRequest> =
-        RpcRequest::new("SportsAPING/v1.0/listClearedOrders".to_owned(), req);
-    let resp: RpcResponse<ClearedOrderSummaryReport> =
-        rb.json(&rpc_request).send()?.json()?;
-    Ok(resp.into_inner())
-}
-
 #[derive(Serialize)]
 pub struct placeOrdersRequest {
     pub marketId: MarketId,
@@ -464,31 +183,6 @@ pub struct placeOrdersRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub r#async: Option<bool>,
 }
-
-pub fn placeOrders(
-    rb: RequestBuilder,
-    marketId: MarketId,
-    instructions: Vec<PlaceInstruction>,
-    customerRef: Option<String>,
-    marketVersion: Option<MarketVersion>,
-    customerStrategyRef: Option<String>,
-    r#async: Option<bool>,
-) -> Result<PlaceExecutionReport, AnyError> {
-    let req: placeOrdersRequest = placeOrdersRequest {
-        marketId,
-        instructions,
-        customerRef,
-        marketVersion,
-        customerStrategyRef,
-        r#async,
-    };
-    let rpc_request: RpcRequest<placeOrdersRequest> =
-        RpcRequest::new("SportsAPING/v1.0/placeOrders".to_owned(), req);
-    let resp: RpcResponse<PlaceExecutionReport> =
-        rb.json(&rpc_request).send()?.json()?;
-    Ok(resp.into_inner())
-}
-
 #[derive(Serialize)]
 pub struct cancelOrdersRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -498,25 +192,6 @@ pub struct cancelOrdersRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub customerRef: Option<String>,
 }
-
-pub fn cancelOrders(
-    rb: RequestBuilder,
-    marketId: Option<MarketId>,
-    instructions: Option<Vec<CancelInstruction>>,
-    customerRef: Option<String>,
-) -> Result<CancelExecutionReport, AnyError> {
-    let req: cancelOrdersRequest = cancelOrdersRequest {
-        marketId,
-        instructions,
-        customerRef,
-    };
-    let rpc_request: RpcRequest<cancelOrdersRequest> =
-        RpcRequest::new("SportsAPING/v1.0/cancelOrders".to_owned(), req);
-    let resp: RpcResponse<CancelExecutionReport> =
-        rb.json(&rpc_request).send()?.json()?;
-    Ok(resp.into_inner())
-}
-
 #[derive(Serialize)]
 pub struct replaceOrdersRequest {
     pub marketId: MarketId,
@@ -528,29 +203,6 @@ pub struct replaceOrdersRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub r#async: Option<bool>,
 }
-
-pub fn replaceOrders(
-    rb: RequestBuilder,
-    marketId: MarketId,
-    instructions: Vec<ReplaceInstruction>,
-    customerRef: Option<String>,
-    marketVersion: Option<MarketVersion>,
-    r#async: Option<bool>,
-) -> Result<ReplaceExecutionReport, AnyError> {
-    let req: replaceOrdersRequest = replaceOrdersRequest {
-        marketId,
-        instructions,
-        customerRef,
-        marketVersion,
-        r#async,
-    };
-    let rpc_request: RpcRequest<replaceOrdersRequest> =
-        RpcRequest::new("SportsAPING/v1.0/replaceOrders".to_owned(), req);
-    let resp: RpcResponse<ReplaceExecutionReport> =
-        rb.json(&rpc_request).send()?.json()?;
-    Ok(resp.into_inner())
-}
-
 #[derive(Serialize)]
 pub struct updateOrdersRequest {
     pub marketId: MarketId,
@@ -558,25 +210,6 @@ pub struct updateOrdersRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub customerRef: Option<String>,
 }
-
-pub fn updateOrders(
-    rb: RequestBuilder,
-    marketId: MarketId,
-    instructions: Vec<UpdateInstruction>,
-    customerRef: Option<String>,
-) -> Result<UpdateExecutionReport, AnyError> {
-    let req: updateOrdersRequest = updateOrdersRequest {
-        marketId,
-        instructions,
-        customerRef,
-    };
-    let rpc_request: RpcRequest<updateOrdersRequest> =
-        RpcRequest::new("SportsAPING/v1.0/updateOrders".to_owned(), req);
-    let resp: RpcResponse<UpdateExecutionReport> =
-        rb.json(&rpc_request).send()?.json()?;
-    Ok(resp.into_inner())
-}
-
 #[derive(Serialize)]
 pub struct listMarketProfitAndLossRequest {
     pub marketIds: Vec<MarketId>,
@@ -587,120 +220,24 @@ pub struct listMarketProfitAndLossRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub netOfCommission: Option<bool>,
 }
-
-pub fn listMarketProfitAndLoss(
-    rb: RequestBuilder,
-    marketIds: Vec<MarketId>,
-    includeSettledBets: Option<bool>,
-    includeBspBets: Option<bool>,
-    netOfCommission: Option<bool>,
-) -> Result<Vec<MarketProfitAndLoss>, AnyError> {
-    let req: listMarketProfitAndLossRequest = listMarketProfitAndLossRequest {
-        marketIds,
-        includeSettledBets,
-        includeBspBets,
-        netOfCommission,
-    };
-    let rpc_request: RpcRequest<listMarketProfitAndLossRequest> =
-        RpcRequest::new(
-            "SportsAPING/v1.0/listMarketProfitAndLoss".to_owned(),
-            req,
-        );
-    let resp: RpcResponse<Vec<MarketProfitAndLoss>> =
-        rb.json(&rpc_request).send()?.json()?;
-    Ok(resp.into_inner())
-}
-
 #[derive(Serialize)]
 pub struct setDefaultExposureLimitForMarketGroupsRequest {
     pub marketGroupType: MarketGroupType,
     pub limit: ExposureLimit,
 }
-
-pub fn setDefaultExposureLimitForMarketGroups(
-    rb: RequestBuilder,
-    marketGroupType: MarketGroupType,
-    limit: ExposureLimit,
-) -> Result<String, AnyError> {
-    let req: setDefaultExposureLimitForMarketGroupsRequest =
-        setDefaultExposureLimitForMarketGroupsRequest {
-            marketGroupType,
-            limit,
-        };
-    let rpc_request: RpcRequest<
-        setDefaultExposureLimitForMarketGroupsRequest,
-    > = RpcRequest::new(
-        "SportsAPING/v1.0/setDefaultExposureLimitForMarketGroups".to_owned(),
-        req,
-    );
-    let resp: RpcResponse<String> = rb.json(&rpc_request).send()?.json()?;
-    Ok(resp.into_inner())
-}
-
 #[derive(Serialize)]
 pub struct setExposureLimitForMarketGroupRequest {
     pub marketGroup: MarketGroup,
     pub limit: ExposureLimit,
 }
-
-pub fn setExposureLimitForMarketGroup(
-    rb: RequestBuilder,
-    marketGroup: MarketGroup,
-    limit: ExposureLimit,
-) -> Result<String, AnyError> {
-    let req: setExposureLimitForMarketGroupRequest =
-        setExposureLimitForMarketGroupRequest { marketGroup, limit };
-    let rpc_request: RpcRequest<setExposureLimitForMarketGroupRequest> =
-        RpcRequest::new(
-            "SportsAPING/v1.0/setExposureLimitForMarketGroup".to_owned(),
-            req,
-        );
-    let resp: RpcResponse<String> = rb.json(&rpc_request).send()?.json()?;
-    Ok(resp.into_inner())
-}
-
 #[derive(Serialize)]
 pub struct removeDefaultExposureLimitForMarketGroupsRequest {
     pub marketGroupType: MarketGroupType,
 }
-
-pub fn removeDefaultExposureLimitForMarketGroups(
-    rb: RequestBuilder,
-    marketGroupType: MarketGroupType,
-) -> Result<String, AnyError> {
-    let req: removeDefaultExposureLimitForMarketGroupsRequest =
-        removeDefaultExposureLimitForMarketGroupsRequest { marketGroupType };
-    let rpc_request: RpcRequest<
-        removeDefaultExposureLimitForMarketGroupsRequest,
-    > = RpcRequest::new(
-        "SportsAPING/v1.0/removeDefaultExposureLimitForMarketGroups"
-            .to_owned(),
-        req,
-    );
-    let resp: RpcResponse<String> = rb.json(&rpc_request).send()?.json()?;
-    Ok(resp.into_inner())
-}
-
 #[derive(Serialize)]
 pub struct removeExposureLimitForMarketGroupRequest {
     pub marketGroup: MarketGroup,
 }
-
-pub fn removeExposureLimitForMarketGroup(
-    rb: RequestBuilder,
-    marketGroup: MarketGroup,
-) -> Result<String, AnyError> {
-    let req: removeExposureLimitForMarketGroupRequest =
-        removeExposureLimitForMarketGroupRequest { marketGroup };
-    let rpc_request: RpcRequest<removeExposureLimitForMarketGroupRequest> =
-        RpcRequest::new(
-            "SportsAPING/v1.0/removeExposureLimitForMarketGroup".to_owned(),
-            req,
-        );
-    let resp: RpcResponse<String> = rb.json(&rpc_request).send()?.json()?;
-    Ok(resp.into_inner())
-}
-
 #[derive(Serialize)]
 pub struct listExposureLimitsForMarketGroupsRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -708,93 +245,656 @@ pub struct listExposureLimitsForMarketGroupsRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub marketGroupFilter: Option<Vec<MarketGroup>>,
 }
-
-pub fn listExposureLimitsForMarketGroups(
-    rb: RequestBuilder,
-    marketGroupTypeFilter: Option<MarketGroupType>,
-    marketGroupFilter: Option<Vec<MarketGroup>>,
-) -> Result<Vec<ExposureLimitsForMarketGroups>, AnyError> {
-    let req: listExposureLimitsForMarketGroupsRequest =
-        listExposureLimitsForMarketGroupsRequest {
-            marketGroupTypeFilter,
-            marketGroupFilter,
-        };
-    let rpc_request: RpcRequest<listExposureLimitsForMarketGroupsRequest> =
-        RpcRequest::new(
-            "SportsAPING/v1.0/listExposureLimitsForMarketGroups".to_owned(),
-            req,
-        );
-    let resp: RpcResponse<Vec<ExposureLimitsForMarketGroups>> =
-        rb.json(&rpc_request).send()?.json()?;
-    Ok(resp.into_inner())
-}
-
 #[derive(Serialize)]
 pub struct unblockMarketGroupRequest {
     pub marketGroup: MarketGroup,
 }
-
-pub fn unblockMarketGroup(
-    rb: RequestBuilder,
-    marketGroup: MarketGroup,
-) -> Result<String, AnyError> {
-    let req: unblockMarketGroupRequest =
-        unblockMarketGroupRequest { marketGroup };
-    let rpc_request: RpcRequest<unblockMarketGroupRequest> =
-        RpcRequest::new("SportsAPING/v1.0/unblockMarketGroup".to_owned(), req);
-    let resp: RpcResponse<String> = rb.json(&rpc_request).send()?.json()?;
-    Ok(resp.into_inner())
-}
-
-pub fn getExposureReuseEnabledEvents(
-    rb: RequestBuilder,
-) -> Result<Vec<i64>, AnyError> {
-    let rpc_request: RpcRequest<()> = RpcRequest::new(
-        "SportsAPING/v1.0/getExposureReuseEnabledEvents".to_owned(),
-        (),
-    );
-    let resp: RpcResponse<Vec<i64>> = rb.json(&rpc_request).send()?.json()?;
-    Ok(resp.into_inner())
-}
-
 #[derive(Serialize)]
 pub struct addExposureReuseEnabledEventsRequest {
     pub eventIds: Vec<i64>,
 }
-
-pub fn addExposureReuseEnabledEvents(
-    rb: RequestBuilder,
-    eventIds: Vec<i64>,
-) -> Result<String, AnyError> {
-    let req: addExposureReuseEnabledEventsRequest =
-        addExposureReuseEnabledEventsRequest { eventIds };
-    let rpc_request: RpcRequest<addExposureReuseEnabledEventsRequest> =
-        RpcRequest::new(
-            "SportsAPING/v1.0/addExposureReuseEnabledEvents".to_owned(),
-            req,
-        );
-    let resp: RpcResponse<String> = rb.json(&rpc_request).send()?.json()?;
-    Ok(resp.into_inner())
-}
-
 #[derive(Serialize)]
 pub struct removeExposureReuseEnabledEventsRequest {
     pub eventIds: Vec<i64>,
 }
-
-pub fn removeExposureReuseEnabledEvents(
-    rb: RequestBuilder,
-    eventIds: Vec<i64>,
-) -> Result<String, AnyError> {
-    let req: removeExposureReuseEnabledEventsRequest =
-        removeExposureReuseEnabledEventsRequest { eventIds };
-    let rpc_request: RpcRequest<removeExposureReuseEnabledEventsRequest> =
-        RpcRequest::new(
-            "SportsAPING/v1.0/removeExposureReuseEnabledEvents".to_owned(),
+pub trait BFApiCalls {
+    fn listEventTypes(
+        &self,
+        filter: MarketFilter,
+        locale: Option<String>,
+    ) -> Result<Vec<EventTypeResult>>;
+    fn listCompetitions(
+        &self,
+        filter: MarketFilter,
+        locale: Option<String>,
+    ) -> Result<Vec<CompetitionResult>>;
+    fn listTimeRanges(
+        &self,
+        filter: MarketFilter,
+        granularity: TimeGranularity,
+    ) -> Result<Vec<TimeRangeResult>>;
+    fn listEvents(
+        &self,
+        filter: MarketFilter,
+        locale: Option<String>,
+    ) -> Result<Vec<EventResult>>;
+    fn listMarketTypes(
+        &self,
+        filter: MarketFilter,
+        locale: Option<String>,
+    ) -> Result<Vec<MarketTypeResult>>;
+    fn listCountries(
+        &self,
+        filter: MarketFilter,
+        locale: Option<String>,
+    ) -> Result<Vec<CountryCodeResult>>;
+    fn listVenues(
+        &self,
+        filter: MarketFilter,
+        locale: Option<String>,
+    ) -> Result<Vec<VenueResult>>;
+    fn listMarketCatalogue(
+        &self,
+        filter: MarketFilter,
+        marketProjection: Option<Vec<MarketProjection>>,
+        sort: Option<MarketSort>,
+        maxResults: i32,
+        locale: Option<String>,
+    ) -> Result<Vec<MarketCatalogue>>;
+    fn listMarketBook(
+        &self,
+        marketIds: Vec<MarketId>,
+        priceProjection: Option<PriceProjection>,
+        orderProjection: Option<OrderProjection>,
+        matchProjection: Option<MatchProjection>,
+        includeOverallPosition: Option<bool>,
+        partitionMatchedByStrategyRef: Option<bool>,
+        customerStrategyRefs: Option<Vec<String>>,
+        currencyCode: Option<String>,
+        locale: Option<String>,
+        matchedSince: Option<DateTime<Utc>>,
+        betIds: Option<Vec<BetId>>,
+    ) -> Result<Vec<MarketBook>>;
+    fn listRunnerBook(
+        &self,
+        marketId: MarketId,
+        selectionId: SelectionId,
+        handicap: Option<f64>,
+        priceProjection: Option<PriceProjection>,
+        orderProjection: Option<OrderProjection>,
+        matchProjection: Option<MatchProjection>,
+        includeOverallPosition: Option<bool>,
+        partitionMatchedByStrategyRef: Option<bool>,
+        customerStrategyRefs: Option<Vec<String>>,
+        currencyCode: Option<String>,
+        locale: Option<String>,
+        matchedSince: Option<DateTime<Utc>>,
+        betIds: Option<Vec<BetId>>,
+    ) -> Result<Vec<MarketBook>>;
+    fn listCurrentOrders(
+        &self,
+        betIds: Option<Vec<BetId>>,
+        marketIds: Option<Vec<MarketId>>,
+        orderProjection: Option<OrderProjection>,
+        customerOrderRefs: Option<Vec<CustomerOrderRef>>,
+        customerStrategyRefs: Option<Vec<CustomerStrategyRef>>,
+        placedDateRange: Option<TimeRange>,
+        dateRange: Option<TimeRange>,
+        orderBy: Option<OrderBy>,
+        sortDir: Option<SortDir>,
+        fromRecord: Option<i32>,
+        recordCount: Option<i32>,
+    ) -> Result<CurrentOrderSummaryReport>;
+    fn listClearedOrders(
+        &self,
+        betStatus: BetStatus,
+        eventTypeIds: Option<Vec<EventTypeId>>,
+        eventIds: Option<Vec<EventId>>,
+        marketIds: Option<Vec<MarketId>>,
+        runnerIds: Option<Vec<RunnerId>>,
+        betIds: Option<Vec<BetId>>,
+        customerOrderRefs: Option<Vec<CustomerOrderRef>>,
+        customerStrategyRefs: Option<Vec<CustomerStrategyRef>>,
+        side: Option<Side>,
+        settledDateRange: Option<TimeRange>,
+        groupBy: Option<GroupBy>,
+        includeItemDescription: Option<bool>,
+        locale: Option<String>,
+        fromRecord: Option<i32>,
+        recordCount: Option<i32>,
+    ) -> Result<ClearedOrderSummaryReport>;
+    fn placeOrders(
+        &self,
+        marketId: MarketId,
+        instructions: Vec<PlaceInstruction>,
+        customerRef: Option<String>,
+        marketVersion: Option<MarketVersion>,
+        customerStrategyRef: Option<String>,
+        r#async: Option<bool>,
+    ) -> Result<PlaceExecutionReport>;
+    fn cancelOrders(
+        &self,
+        marketId: Option<MarketId>,
+        instructions: Option<Vec<CancelInstruction>>,
+        customerRef: Option<String>,
+    ) -> Result<CancelExecutionReport>;
+    fn replaceOrders(
+        &self,
+        marketId: MarketId,
+        instructions: Vec<ReplaceInstruction>,
+        customerRef: Option<String>,
+        marketVersion: Option<MarketVersion>,
+        r#async: Option<bool>,
+    ) -> Result<ReplaceExecutionReport>;
+    fn updateOrders(
+        &self,
+        marketId: MarketId,
+        instructions: Vec<UpdateInstruction>,
+        customerRef: Option<String>,
+    ) -> Result<UpdateExecutionReport>;
+    fn listMarketProfitAndLoss(
+        &self,
+        marketIds: Vec<MarketId>,
+        includeSettledBets: Option<bool>,
+        includeBspBets: Option<bool>,
+        netOfCommission: Option<bool>,
+    ) -> Result<Vec<MarketProfitAndLoss>>;
+    fn setDefaultExposureLimitForMarketGroups(
+        &self,
+        marketGroupType: MarketGroupType,
+        limit: ExposureLimit,
+    ) -> Result<String>;
+    fn setExposureLimitForMarketGroup(
+        &self,
+        marketGroup: MarketGroup,
+        limit: ExposureLimit,
+    ) -> Result<String>;
+    fn removeDefaultExposureLimitForMarketGroups(
+        &self,
+        marketGroupType: MarketGroupType,
+    ) -> Result<String>;
+    fn removeExposureLimitForMarketGroup(
+        &self,
+        marketGroup: MarketGroup,
+    ) -> Result<String>;
+    fn listExposureLimitsForMarketGroups(
+        &self,
+        marketGroupTypeFilter: Option<MarketGroupType>,
+        marketGroupFilter: Option<Vec<MarketGroup>>,
+    ) -> Result<Vec<ExposureLimitsForMarketGroups>>;
+    fn unblockMarketGroup(&self, marketGroup: MarketGroup) -> Result<String>;
+    fn getExposureReuseEnabledEvents(&self) -> Result<Vec<i64>>;
+    fn addExposureReuseEnabledEvents(
+        &self,
+        eventIds: Vec<i64>,
+    ) -> Result<String>;
+    fn removeExposureReuseEnabledEvents(
+        &self,
+        eventIds: Vec<i64>,
+    ) -> Result<String>;
+}
+impl BFApiCalls for crate::BFClient {
+    fn listEventTypes(
+        &self,
+        filter: MarketFilter,
+        locale: Option<String>,
+    ) -> Result<Vec<EventTypeResult>> {
+        let req: listEventTypesRequest =
+            listEventTypesRequest { filter, locale };
+        let rpc_request: RpcRequest<listEventTypesRequest> =
+            RpcRequest::new("SportsAPING/v1.0/listEventTypes".to_owned(), req);
+        self.req(rpc_request).map(|x| x.into_inner())
+    }
+    fn listCompetitions(
+        &self,
+        filter: MarketFilter,
+        locale: Option<String>,
+    ) -> Result<Vec<CompetitionResult>> {
+        let req: listCompetitionsRequest =
+            listCompetitionsRequest { filter, locale };
+        let rpc_request: RpcRequest<listCompetitionsRequest> = RpcRequest::new(
+            "SportsAPING/v1.0/listCompetitions".to_owned(),
             req,
         );
-    let resp: RpcResponse<String> = rb.json(&rpc_request).send()?.json()?;
-    Ok(resp.into_inner())
+        self.req(rpc_request).map(|x| x.into_inner())
+    }
+    fn listTimeRanges(
+        &self,
+        filter: MarketFilter,
+        granularity: TimeGranularity,
+    ) -> Result<Vec<TimeRangeResult>> {
+        let req: listTimeRangesRequest = listTimeRangesRequest {
+            filter,
+            granularity,
+        };
+        let rpc_request: RpcRequest<listTimeRangesRequest> =
+            RpcRequest::new("SportsAPING/v1.0/listTimeRanges".to_owned(), req);
+        self.req(rpc_request).map(|x| x.into_inner())
+    }
+    fn listEvents(
+        &self,
+        filter: MarketFilter,
+        locale: Option<String>,
+    ) -> Result<Vec<EventResult>> {
+        let req: listEventsRequest = listEventsRequest { filter, locale };
+        let rpc_request: RpcRequest<listEventsRequest> =
+            RpcRequest::new("SportsAPING/v1.0/listEvents".to_owned(), req);
+        self.req(rpc_request).map(|x| x.into_inner())
+    }
+    fn listMarketTypes(
+        &self,
+        filter: MarketFilter,
+        locale: Option<String>,
+    ) -> Result<Vec<MarketTypeResult>> {
+        let req: listMarketTypesRequest =
+            listMarketTypesRequest { filter, locale };
+        let rpc_request: RpcRequest<listMarketTypesRequest> = RpcRequest::new(
+            "SportsAPING/v1.0/listMarketTypes".to_owned(),
+            req,
+        );
+        self.req(rpc_request).map(|x| x.into_inner())
+    }
+    fn listCountries(
+        &self,
+        filter: MarketFilter,
+        locale: Option<String>,
+    ) -> Result<Vec<CountryCodeResult>> {
+        let req: listCountriesRequest =
+            listCountriesRequest { filter, locale };
+        let rpc_request: RpcRequest<listCountriesRequest> =
+            RpcRequest::new("SportsAPING/v1.0/listCountries".to_owned(), req);
+        self.req(rpc_request).map(|x| x.into_inner())
+    }
+    fn listVenues(
+        &self,
+        filter: MarketFilter,
+        locale: Option<String>,
+    ) -> Result<Vec<VenueResult>> {
+        let req: listVenuesRequest = listVenuesRequest { filter, locale };
+        let rpc_request: RpcRequest<listVenuesRequest> =
+            RpcRequest::new("SportsAPING/v1.0/listVenues".to_owned(), req);
+        self.req(rpc_request).map(|x| x.into_inner())
+    }
+    fn listMarketCatalogue(
+        &self,
+        filter: MarketFilter,
+        marketProjection: Option<Vec<MarketProjection>>,
+        sort: Option<MarketSort>,
+        maxResults: i32,
+        locale: Option<String>,
+    ) -> Result<Vec<MarketCatalogue>> {
+        let req: listMarketCatalogueRequest = listMarketCatalogueRequest {
+            filter,
+            marketProjection,
+            sort,
+            maxResults,
+            locale,
+        };
+        let rpc_request: RpcRequest<listMarketCatalogueRequest> =
+            RpcRequest::new(
+                "SportsAPING/v1.0/listMarketCatalogue".to_owned(),
+                req,
+            );
+        self.req(rpc_request).map(|x| x.into_inner())
+    }
+    fn listMarketBook(
+        &self,
+        marketIds: Vec<MarketId>,
+        priceProjection: Option<PriceProjection>,
+        orderProjection: Option<OrderProjection>,
+        matchProjection: Option<MatchProjection>,
+        includeOverallPosition: Option<bool>,
+        partitionMatchedByStrategyRef: Option<bool>,
+        customerStrategyRefs: Option<Vec<String>>,
+        currencyCode: Option<String>,
+        locale: Option<String>,
+        matchedSince: Option<DateTime<Utc>>,
+        betIds: Option<Vec<BetId>>,
+    ) -> Result<Vec<MarketBook>> {
+        let req: listMarketBookRequest = listMarketBookRequest {
+            marketIds,
+            priceProjection,
+            orderProjection,
+            matchProjection,
+            includeOverallPosition,
+            partitionMatchedByStrategyRef,
+            customerStrategyRefs,
+            currencyCode,
+            locale,
+            matchedSince,
+            betIds,
+        };
+        let rpc_request: RpcRequest<listMarketBookRequest> =
+            RpcRequest::new("SportsAPING/v1.0/listMarketBook".to_owned(), req);
+        self.req(rpc_request).map(|x| x.into_inner())
+    }
+    fn listRunnerBook(
+        &self,
+        marketId: MarketId,
+        selectionId: SelectionId,
+        handicap: Option<f64>,
+        priceProjection: Option<PriceProjection>,
+        orderProjection: Option<OrderProjection>,
+        matchProjection: Option<MatchProjection>,
+        includeOverallPosition: Option<bool>,
+        partitionMatchedByStrategyRef: Option<bool>,
+        customerStrategyRefs: Option<Vec<String>>,
+        currencyCode: Option<String>,
+        locale: Option<String>,
+        matchedSince: Option<DateTime<Utc>>,
+        betIds: Option<Vec<BetId>>,
+    ) -> Result<Vec<MarketBook>> {
+        let req: listRunnerBookRequest = listRunnerBookRequest {
+            marketId,
+            selectionId,
+            handicap,
+            priceProjection,
+            orderProjection,
+            matchProjection,
+            includeOverallPosition,
+            partitionMatchedByStrategyRef,
+            customerStrategyRefs,
+            currencyCode,
+            locale,
+            matchedSince,
+            betIds,
+        };
+        let rpc_request: RpcRequest<listRunnerBookRequest> =
+            RpcRequest::new("SportsAPING/v1.0/listRunnerBook".to_owned(), req);
+        self.req(rpc_request).map(|x| x.into_inner())
+    }
+    fn listCurrentOrders(
+        &self,
+        betIds: Option<Vec<BetId>>,
+        marketIds: Option<Vec<MarketId>>,
+        orderProjection: Option<OrderProjection>,
+        customerOrderRefs: Option<Vec<CustomerOrderRef>>,
+        customerStrategyRefs: Option<Vec<CustomerStrategyRef>>,
+        placedDateRange: Option<TimeRange>,
+        dateRange: Option<TimeRange>,
+        orderBy: Option<OrderBy>,
+        sortDir: Option<SortDir>,
+        fromRecord: Option<i32>,
+        recordCount: Option<i32>,
+    ) -> Result<CurrentOrderSummaryReport> {
+        let req: listCurrentOrdersRequest = listCurrentOrdersRequest {
+            betIds,
+            marketIds,
+            orderProjection,
+            customerOrderRefs,
+            customerStrategyRefs,
+            placedDateRange,
+            dateRange,
+            orderBy,
+            sortDir,
+            fromRecord,
+            recordCount,
+        };
+        let rpc_request: RpcRequest<listCurrentOrdersRequest> =
+            RpcRequest::new(
+                "SportsAPING/v1.0/listCurrentOrders".to_owned(),
+                req,
+            );
+        self.req(rpc_request).map(|x| x.into_inner())
+    }
+    fn listClearedOrders(
+        &self,
+        betStatus: BetStatus,
+        eventTypeIds: Option<Vec<EventTypeId>>,
+        eventIds: Option<Vec<EventId>>,
+        marketIds: Option<Vec<MarketId>>,
+        runnerIds: Option<Vec<RunnerId>>,
+        betIds: Option<Vec<BetId>>,
+        customerOrderRefs: Option<Vec<CustomerOrderRef>>,
+        customerStrategyRefs: Option<Vec<CustomerStrategyRef>>,
+        side: Option<Side>,
+        settledDateRange: Option<TimeRange>,
+        groupBy: Option<GroupBy>,
+        includeItemDescription: Option<bool>,
+        locale: Option<String>,
+        fromRecord: Option<i32>,
+        recordCount: Option<i32>,
+    ) -> Result<ClearedOrderSummaryReport> {
+        let req: listClearedOrdersRequest = listClearedOrdersRequest {
+            betStatus,
+            eventTypeIds,
+            eventIds,
+            marketIds,
+            runnerIds,
+            betIds,
+            customerOrderRefs,
+            customerStrategyRefs,
+            side,
+            settledDateRange,
+            groupBy,
+            includeItemDescription,
+            locale,
+            fromRecord,
+            recordCount,
+        };
+        let rpc_request: RpcRequest<listClearedOrdersRequest> =
+            RpcRequest::new(
+                "SportsAPING/v1.0/listClearedOrders".to_owned(),
+                req,
+            );
+        self.req(rpc_request).map(|x| x.into_inner())
+    }
+    fn placeOrders(
+        &self,
+        marketId: MarketId,
+        instructions: Vec<PlaceInstruction>,
+        customerRef: Option<String>,
+        marketVersion: Option<MarketVersion>,
+        customerStrategyRef: Option<String>,
+        r#async: Option<bool>,
+    ) -> Result<PlaceExecutionReport> {
+        let req: placeOrdersRequest = placeOrdersRequest {
+            marketId,
+            instructions,
+            customerRef,
+            marketVersion,
+            customerStrategyRef,
+            r#async,
+        };
+        let rpc_request: RpcRequest<placeOrdersRequest> =
+            RpcRequest::new("SportsAPING/v1.0/placeOrders".to_owned(), req);
+        self.req(rpc_request).map(|x| x.into_inner())
+    }
+    fn cancelOrders(
+        &self,
+        marketId: Option<MarketId>,
+        instructions: Option<Vec<CancelInstruction>>,
+        customerRef: Option<String>,
+    ) -> Result<CancelExecutionReport> {
+        let req: cancelOrdersRequest = cancelOrdersRequest {
+            marketId,
+            instructions,
+            customerRef,
+        };
+        let rpc_request: RpcRequest<cancelOrdersRequest> =
+            RpcRequest::new("SportsAPING/v1.0/cancelOrders".to_owned(), req);
+        self.req(rpc_request).map(|x| x.into_inner())
+    }
+    fn replaceOrders(
+        &self,
+        marketId: MarketId,
+        instructions: Vec<ReplaceInstruction>,
+        customerRef: Option<String>,
+        marketVersion: Option<MarketVersion>,
+        r#async: Option<bool>,
+    ) -> Result<ReplaceExecutionReport> {
+        let req: replaceOrdersRequest = replaceOrdersRequest {
+            marketId,
+            instructions,
+            customerRef,
+            marketVersion,
+            r#async,
+        };
+        let rpc_request: RpcRequest<replaceOrdersRequest> =
+            RpcRequest::new("SportsAPING/v1.0/replaceOrders".to_owned(), req);
+        self.req(rpc_request).map(|x| x.into_inner())
+    }
+    fn updateOrders(
+        &self,
+        marketId: MarketId,
+        instructions: Vec<UpdateInstruction>,
+        customerRef: Option<String>,
+    ) -> Result<UpdateExecutionReport> {
+        let req: updateOrdersRequest = updateOrdersRequest {
+            marketId,
+            instructions,
+            customerRef,
+        };
+        let rpc_request: RpcRequest<updateOrdersRequest> =
+            RpcRequest::new("SportsAPING/v1.0/updateOrders".to_owned(), req);
+        self.req(rpc_request).map(|x| x.into_inner())
+    }
+    fn listMarketProfitAndLoss(
+        &self,
+        marketIds: Vec<MarketId>,
+        includeSettledBets: Option<bool>,
+        includeBspBets: Option<bool>,
+        netOfCommission: Option<bool>,
+    ) -> Result<Vec<MarketProfitAndLoss>> {
+        let req: listMarketProfitAndLossRequest =
+            listMarketProfitAndLossRequest {
+                marketIds,
+                includeSettledBets,
+                includeBspBets,
+                netOfCommission,
+            };
+        let rpc_request: RpcRequest<listMarketProfitAndLossRequest> =
+            RpcRequest::new(
+                "SportsAPING/v1.0/listMarketProfitAndLoss".to_owned(),
+                req,
+            );
+        self.req(rpc_request).map(|x| x.into_inner())
+    }
+    fn setDefaultExposureLimitForMarketGroups(
+        &self,
+        marketGroupType: MarketGroupType,
+        limit: ExposureLimit,
+    ) -> Result<String> {
+        let req: setDefaultExposureLimitForMarketGroupsRequest =
+            setDefaultExposureLimitForMarketGroupsRequest {
+                marketGroupType,
+                limit,
+            };
+        let rpc_request: RpcRequest<
+            setDefaultExposureLimitForMarketGroupsRequest,
+        > = RpcRequest::new(
+            "SportsAPING/v1.0/setDefaultExposureLimitForMarketGroups"
+                .to_owned(),
+            req,
+        );
+        self.req(rpc_request).map(|x| x.into_inner())
+    }
+    fn setExposureLimitForMarketGroup(
+        &self,
+        marketGroup: MarketGroup,
+        limit: ExposureLimit,
+    ) -> Result<String> {
+        let req: setExposureLimitForMarketGroupRequest =
+            setExposureLimitForMarketGroupRequest { marketGroup, limit };
+        let rpc_request: RpcRequest<setExposureLimitForMarketGroupRequest> =
+            RpcRequest::new(
+                "SportsAPING/v1.0/setExposureLimitForMarketGroup".to_owned(),
+                req,
+            );
+        self.req(rpc_request).map(|x| x.into_inner())
+    }
+    fn removeDefaultExposureLimitForMarketGroups(
+        &self,
+        marketGroupType: MarketGroupType,
+    ) -> Result<String> {
+        let req: removeDefaultExposureLimitForMarketGroupsRequest =
+            removeDefaultExposureLimitForMarketGroupsRequest {
+                marketGroupType,
+            };
+        let rpc_request: RpcRequest<
+            removeDefaultExposureLimitForMarketGroupsRequest,
+        > = RpcRequest::new(
+            "SportsAPING/v1.0/removeDefaultExposureLimitForMarketGroups"
+                .to_owned(),
+            req,
+        );
+        self.req(rpc_request).map(|x| x.into_inner())
+    }
+    fn removeExposureLimitForMarketGroup(
+        &self,
+        marketGroup: MarketGroup,
+    ) -> Result<String> {
+        let req: removeExposureLimitForMarketGroupRequest =
+            removeExposureLimitForMarketGroupRequest { marketGroup };
+        let rpc_request: RpcRequest<removeExposureLimitForMarketGroupRequest> =
+            RpcRequest::new(
+                "SportsAPING/v1.0/removeExposureLimitForMarketGroup"
+                    .to_owned(),
+                req,
+            );
+        self.req(rpc_request).map(|x| x.into_inner())
+    }
+    fn listExposureLimitsForMarketGroups(
+        &self,
+        marketGroupTypeFilter: Option<MarketGroupType>,
+        marketGroupFilter: Option<Vec<MarketGroup>>,
+    ) -> Result<Vec<ExposureLimitsForMarketGroups>> {
+        let req: listExposureLimitsForMarketGroupsRequest =
+            listExposureLimitsForMarketGroupsRequest {
+                marketGroupTypeFilter,
+                marketGroupFilter,
+            };
+        let rpc_request: RpcRequest<listExposureLimitsForMarketGroupsRequest> =
+            RpcRequest::new(
+                "SportsAPING/v1.0/listExposureLimitsForMarketGroups"
+                    .to_owned(),
+                req,
+            );
+        self.req(rpc_request).map(|x| x.into_inner())
+    }
+    fn unblockMarketGroup(&self, marketGroup: MarketGroup) -> Result<String> {
+        let req: unblockMarketGroupRequest =
+            unblockMarketGroupRequest { marketGroup };
+        let rpc_request: RpcRequest<unblockMarketGroupRequest> =
+            RpcRequest::new(
+                "SportsAPING/v1.0/unblockMarketGroup".to_owned(),
+                req,
+            );
+        self.req(rpc_request).map(|x| x.into_inner())
+    }
+    fn getExposureReuseEnabledEvents(&self) -> Result<Vec<i64>> {
+        let rpc_request: RpcRequest<()> = RpcRequest::new(
+            "SportsAPING/v1.0/getExposureReuseEnabledEvents".to_owned(),
+            (),
+        );
+        self.req(rpc_request).map(|x| x.into_inner())
+    }
+    fn addExposureReuseEnabledEvents(
+        &self,
+        eventIds: Vec<i64>,
+    ) -> Result<String> {
+        let req: addExposureReuseEnabledEventsRequest =
+            addExposureReuseEnabledEventsRequest { eventIds };
+        let rpc_request: RpcRequest<addExposureReuseEnabledEventsRequest> =
+            RpcRequest::new(
+                "SportsAPING/v1.0/addExposureReuseEnabledEvents".to_owned(),
+                req,
+            );
+        self.req(rpc_request).map(|x| x.into_inner())
+    }
+    fn removeExposureReuseEnabledEvents(
+        &self,
+        eventIds: Vec<i64>,
+    ) -> Result<String> {
+        let req: removeExposureReuseEnabledEventsRequest =
+            removeExposureReuseEnabledEventsRequest { eventIds };
+        let rpc_request: RpcRequest<removeExposureReuseEnabledEventsRequest> =
+            RpcRequest::new(
+                "SportsAPING/v1.0/removeExposureReuseEnabledEvents".to_owned(),
+                req,
+            );
+        self.req(rpc_request).map(|x| x.into_inner())
+    }
 }
 #[derive(Debug, Deserialize, Serialize)]
 pub enum MarketProjection {
@@ -1040,7 +1140,7 @@ pub enum LimitBreachActionType {
     STOP_BETTING,
     TEAR_DOWN_MARKET_GROUP,
 }
-#[derive(Debug, Default, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct MarketFilter {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub textQuery: Option<String>,
