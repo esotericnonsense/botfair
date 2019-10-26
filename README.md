@@ -2,14 +2,64 @@
 
 Rust bindings for the Betfair SportsAPING.
 
+https://git.esotericnonsense.com/pub/botfair.git - main repository
+https://github.com/esotericnonsense/botfair.git - github repo, for PRs etc
+
+## Contact
+
+Daniel Edgecumbe (esotericnonsense)
+[botfair@esotericnonsense.com](mailto:botfair@esotericnonsense.com)
+
+## Usage
+```
+let bf_creds = BFCredentials::new(
+    "my_username".to_owned(),
+    "my_password".to_owned(),
+    "/path/to/pfx/file".to_owned(),
+    "my_appkey".to_owned()
+).unwrap();
+
+let bf_client = BFClient::new(
+    bf_creds,
+    None
+).unwrap();
+
+// This is all rather verbose at the moment.
+// What will the future bring?
+let market_filter = MarketFilter {
+    textQuery: None,
+    exchangeIds: None,
+    eventTypeIds: None,
+    eventIds: None,
+    competitionIds: None,
+    marketIds: None,
+    venues: None,
+    bspOnly: None,
+    turnInPlayEnabled: None,
+    inPlayOnly: None,
+    marketBettingTypes: None,
+    marketCountries: None,
+    marketTypeCodes: None,
+    marketStartTime: None,
+    withOrders: None,
+    raceTypes: None,
+};
+
+// List ten arbitrary markets
+let catalogues: Vec<MarketCatalogue> =
+    bf_client.listMarketCatalogue(market_filter, None, None, 10, None)?;
+
+println!("{:?}", catalogues);
+```
+
+## Generating the bindings
+
+If you just want to use the crate, you can skip this section as the bindings
+are already present.
+
 To re-generate the bindings from the Betfair XML documentation, you will need
 to `cd genapi; ./main.sh` which fetches the documentation from Betfair's
 servers and runs a python script on them to generate the Rust bindings.
-
-If you just want to use the bindings, this is not necessary as the result is
-already present in the crate.
-
-This is a work in progress, more information coming soon.
 
 ## License
 
@@ -26,7 +76,3 @@ author.
 
 For paid support, licensing queries, or general banter, please use the below
 contact details:
-
-## Contact
-
-Daniel Edgecumbe botfair@esotericnonsense.com
