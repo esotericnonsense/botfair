@@ -2,16 +2,22 @@
 extern crate log;
 
 use reqwest::{Client, Identity};
+use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 use std::sync::{Arc, RwLock};
 
-mod generated_api;
+// mod generated_api;
 mod json_rpc;
+
+use crate::json_rpc::{RpcRequest, RpcResponse};
 
 #[derive(Debug)]
 pub enum AnyError {
     Io(std::io::Error),
     Reqwest(reqwest::Error),
+    SerdeJson(serde_json::Error),
+    BFLoginFailure(String),
+    General(String),
     Other,
 }
 
@@ -26,6 +32,12 @@ impl From<std::io::Error> for AnyError {
 impl From<reqwest::Error> for AnyError {
     fn from(e: reqwest::Error) -> Self {
         AnyError::Reqwest(e)
+    }
+}
+
+impl From<serde_json::Error> for AnyError {
+    fn from(e: serde_json::Error) -> Self {
+        AnyError::SerdeJson(e)
     }
 }
 
@@ -140,6 +152,64 @@ impl BFClient {
     // We recommend that Connection: keep-alive header is set for all requests to guarantee a persistent connection and therefore reducing latency. Please note: Idle keep-alive connection to the API endpoints are closed every 3 minutes.
     // You should ensure that you handle the INVALID_SESSION_TOKEN error within your code by creating a new session token via the API login method.
 
+    fn req_internal<T1: Serialize, T2: DeserializeOwned>(
+        &self,
+        maybe_token: &Option<String>,
+        rpc_request: &RpcRequest<T1>,
+    ) -> Result<RpcResponse<T2>> {
+        match maybe_token {
+            None => Err(AnyError::General(
+                "req_internal: must login first".to_owned(),
+            )),
+            Some(token) => {
+                const JSONRPC_URI: &str =
+                    "https://api.betfair.com/exchange/betting/json-rpc/v1";
+
+                Ok(self
+                    .client
+                    .post(JSONRPC_URI)
+                    .header("X-Application", self.creds.app_key())
+                    .header("X-Authentication", token)
+                    .json(&rpc_request)
+                    .send()?
+                    .json()
+                    .unwrap())
+            }
+        }
+    }
+
+    /// Perform a request, logging in if necessary, fail if login
+    fn req<T1: Serialize, T2: DeserializeOwned>(
+        &self,
+        req: RpcRequest<T1>,
+    ) -> Result<RpcResponse<T2>> {
+        // Initially acquire the token via a read lock
+
+        let token_lock = self.session_token.read().unwrap();
+        let mut token = token_lock.clone();
+        drop(token_lock);
+
+        loop {
+            // TODO: exponential backoff
+
+            match self.req_internal(&token, &req) {
+                Ok(resp) => return Ok(resp),
+                Err(_) => {
+                    // Assume the only error possible is an auth error
+
+                    let mut token_lock = self.session_token.write().unwrap();
+
+                    if *token_lock == token {
+                        *token_lock = Some(self.login()?);
+                    }
+                    token = token_lock.clone()
+
+                    // write lock released
+                }
+            }
+        }
+    }
+
     fn login(&self) -> Result<String> {
         const CERTLOGIN_URI: &str =
             "https://identitysso-cert.betfair.com/api/certlogin";
@@ -170,34 +240,16 @@ impl BFClient {
         info!("LoginResponse: {:?}", login_response.loginStatus);
 
         match login_response.sessionToken {
-            Some(token) => {
-                let mut x = self.session_token.write().unwrap();
-                *x = Some(token.clone());
-                Ok(token)
-            }
-            None => Err(AnyError::Other),
+            Some(token) => Ok(token),
+            None => Err(AnyError::BFLoginFailure(format!(
+                "loginStatus: {}",
+                login_response.loginStatus
+            ))),
         }
-    }
-
-    pub fn make_request_builder(&self) -> Result<reqwest::RequestBuilder> {
-        const JSONRPC_URI: &str =
-            "https://api.betfair.com/exchange/betting/json-rpc/v1";
-        let token_guard = self.session_token.read().unwrap();
-        let token_opt = token_guard.clone();
-        drop(token_guard);
-        let token = match token_opt {
-            Some(x) => x,
-            None => self.login()?,
-        };
-        Ok(self
-            .client
-            .post(JSONRPC_URI)
-            .header("X-Application", self.creds.app_key())
-            .header("X-Authentication", token))
     }
 }
 
-use generated_api::*;
+// use generated_api::*;
 
 fn main() -> Result<()> {
     env_logger::Builder::from_default_env()
@@ -217,43 +269,43 @@ fn main() -> Result<()> {
         BFCredentials::new(username, password, PFX_PATH.to_owned(), app_key)?;
     let bf_client = BFClient::new(bf_creds, Some(PROXY_URI.to_owned()))?;
 
-    let catalogues: Vec<MarketCatalogue> = listMarketCatalogue(
-        bf_client.make_request_builder()?,
-        MarketFilter::default(),
-        None,
-        None,
-        10,
-        None,
-    )?;
-    for catalogue in catalogues.iter() {
-        info!(
-            "{} {} {:?}",
-            catalogue.marketId, catalogue.marketName, catalogue.totalMatched
-        );
-    }
+    // let catalogues: Vec<MarketCatalogue> = listMarketCatalogue(
+    //     bf_client.make_request_builder()?,
+    //     MarketFilter::default(),
+    //     None,
+    //     None,
+    //     10,
+    //     None,
+    // )?;
+    // for catalogue in catalogues.iter() {
+    //     info!(
+    //         "{} {} {:?}",
+    //         catalogue.marketId, catalogue.marketName, catalogue.totalMatched
+    //     );
+    // }
 
-    let market_ids: Vec<MarketId> = catalogues
-        .iter()
-        .map(|x: &MarketCatalogue| x.marketId.clone())
-        .collect();
+    // let market_ids: Vec<MarketId> = catalogues
+    //     .iter()
+    //     .map(|x: &MarketCatalogue| x.marketId.clone())
+    //     .collect();
 
-    let books: Vec<MarketBook> = listMarketBook(
-        bf_client.make_request_builder()?,
-        market_ids,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-    )?;
+    // let books: Vec<MarketBook> = listMarketBook(
+    //     bf_client.make_request_builder()?,
+    //     market_ids,
+    //     None,
+    //     None,
+    //     None,
+    //     None,
+    //     None,
+    //     None,
+    //     None,
+    //     None,
+    //     None,
+    //     None,
+    // )?;
     // info!("{:?}", books);
 
-    let s: String = serde_json::to_string(&books).expect("whatever");
-    println!("{}", s);
+    // let s: String = serde_json::to_string(&books).expect("whatever");
+    // println!("{}", s);
     Ok(())
 }
