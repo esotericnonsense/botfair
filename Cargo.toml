@@ -1,7 +1,12 @@
 [package]
-name = "betfair"
+name = "botfair"
 version = "0.1.0"
+description = "rust bindings for Betfair's SportsAPING"
+keywords = ["betfair", "jsonrpc", "aping", "sports", "betting"]
+repository = "https://git.esotericnonsense.com/pub/botfair.git"
 authors = ["Daniel Edgecumbe <git@esotericnonsense.com>"]
+readme = "README.md"
+license = "AGPL-3.0-only"
 edition = "2018"
 
 [dependencies]

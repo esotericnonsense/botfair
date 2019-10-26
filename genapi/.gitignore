@@ -1,5 +1,3 @@
-env/*
 .mypy_cache/*
-
-# Ignore generated rust files
-*.rs
+SportsAPING.xml
+SportsAPING.patched.xml

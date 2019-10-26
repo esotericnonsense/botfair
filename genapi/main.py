@@ -1,4 +1,19 @@
 #!/usr/bin/env python3
+# SPDX-Copyright: Copyright (c) 2019 Daniel Edgecumbe (esotericnonsense)
+# SPDX-License-Identifier: AGPL-3.0-only
+#
+# This file is part of botfair.  botfair is free software: you can
+# redistribute it and/or modify it under the terms of the GNU Affero General
+# Public License as published by the Free Software Foundation, either version
+# 3 of the License, or (at your option) any later version.
+#
+# botfair is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License
+# for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with botfair.  If not, see <http://www.gnu.org/licenses/>.
 
 from typing import Optional, List, Tuple
 from xml.etree.ElementTree import Element, parse
@@ -655,12 +670,12 @@ Result<{resp_type}>"""
 
 
 def main() -> None:
-    tree = parse("SportsAPING.xml")
+    tree = parse("SportsAPING.patched.xml")
     aping: APING = parse_aping(tree.getroot())
     # print(aping.to_json())
 
-    print("// This file is generated.")
-    print("// Any manual edits will be overwritten.")
+    print("// This file has been automatically generated.")
+    print("// Any manual edits may be overwritten.")
     print()
     print("#![allow(non_camel_case_types)]")  # TODO figure this out
     print("#![allow(non_snake_case)]")  # TODO figure this out
