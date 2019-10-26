@@ -571,6 +571,7 @@ def generate_rust_functions(operations: List[Operation]) -> str:
     For the time being the function bodies are just empty.
     """
 
+    structs: List[str] = []
     functions: List[str] = []
     for operation in operations:  # type: Operation
         # print(operation)
@@ -607,7 +608,7 @@ pub {x[0]}: {x[1]}"""
                 format_param(x) for x in params_converted
             )
 
-            functions.append(
+            structs.append(
                 f"""#[derive(Serialize)]
 pub struct {struct_name} {{ {formatted_params_struct} }}"""
             )
@@ -643,7 +644,7 @@ Result<{resp_type}, AnyError> {{
 }}"""
         )
 
-    return "\n\n".join(functions)
+    return "\n\n".join(structs + functions)
 
 
 def main() -> None:

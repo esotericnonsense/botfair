@@ -6,7 +6,7 @@ use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 use std::sync::{Arc, RwLock};
 
-// mod generated_api;
+mod generated_api;
 mod json_rpc;
 
 use crate::json_rpc::{RpcRequest, RpcResponse};
@@ -179,32 +179,38 @@ impl BFClient {
     }
 
     /// Perform a request, logging in if necessary, fail if login
-    fn req<T1: Serialize, T2: DeserializeOwned>(
+    pub fn req<T1: Serialize, T2: DeserializeOwned>(
         &self,
         req: RpcRequest<T1>,
     ) -> Result<RpcResponse<T2>> {
         // Initially acquire the token via a read lock
 
+        trace!("Taking token read lock");
         let token_lock = self.session_token.read().unwrap();
         let mut token = token_lock.clone();
         drop(token_lock);
+        trace!("Dropped token read lock");
 
         loop {
             // TODO: exponential backoff
 
+            info!("Performing a request");
             match self.req_internal(&token, &req) {
                 Ok(resp) => return Ok(resp),
                 Err(_) => {
+                    info!("Not logged in");
                     // Assume the only error possible is an auth error
 
+                    trace!("Taking token write lock");
                     let mut token_lock = self.session_token.write().unwrap();
 
                     if *token_lock == token {
                         *token_lock = Some(self.login()?);
                     }
-                    token = token_lock.clone()
+                    token = token_lock.clone();
 
-                    // write lock released
+                    drop(token_lock); // drops at end of scope but we log
+                    trace!("Dropped token read lock");
                 }
             }
         }
@@ -214,7 +220,8 @@ impl BFClient {
         const CERTLOGIN_URI: &str =
             "https://identitysso-cert.betfair.com/api/certlogin";
 
-        let ident = Identity::from_pkcs12_der(self.creds.pfx().as_slice(), "")?;
+        let ident =
+            Identity::from_pkcs12_der(self.creds.pfx().as_slice(), "")?;
 
         let client: reqwest::Client = match &(self.proxy_uri) {
             Some(uri) => {
@@ -249,7 +256,7 @@ impl BFClient {
     }
 }
 
-// use generated_api::*;
+use generated_api::*;
 
 fn main() -> Result<()> {
     env_logger::Builder::from_default_env()
@@ -269,43 +276,33 @@ fn main() -> Result<()> {
         BFCredentials::new(username, password, PFX_PATH.to_owned(), app_key)?;
     let bf_client = BFClient::new(bf_creds, Some(PROXY_URI.to_owned()))?;
 
-    // let catalogues: Vec<MarketCatalogue> = listMarketCatalogue(
-    //     bf_client.make_request_builder()?,
-    //     MarketFilter::default(),
-    //     None,
-    //     None,
-    //     10,
-    //     None,
-    // )?;
+    info!("Created client!");
+
+    let catalogues: Vec<MarketCatalogue> = bf_client.listMarketCatalogue(
+        MarketFilter::default(),
+        None,
+        None,
+        10,
+        None,
+    )?;
     // for catalogue in catalogues.iter() {
-    //     info!(
+    //     println!(
     //         "{} {} {:?}",
     //         catalogue.marketId, catalogue.marketName, catalogue.totalMatched
     //     );
     // }
 
-    // let market_ids: Vec<MarketId> = catalogues
-    //     .iter()
-    //     .map(|x: &MarketCatalogue| x.marketId.clone())
-    //     .collect();
+    let market_ids: Vec<MarketId> = catalogues
+        .iter()
+        .map(|x: &MarketCatalogue| x.marketId.clone())
+        .collect();
 
-    // let books: Vec<MarketBook> = listMarketBook(
-    //     bf_client.make_request_builder()?,
-    //     market_ids,
-    //     None,
-    //     None,
-    //     None,
-    //     None,
-    //     None,
-    //     None,
-    //     None,
-    //     None,
-    //     None,
-    //     None,
-    // )?;
-    // info!("{:?}", books);
+    let books: Vec<MarketBook> = bf_client.listMarketBook(
+        market_ids, None, None, None, None, None, None, None, None, None, None,
+    )?;
+    // println!("{:?}", books);
 
-    // let s: String = serde_json::to_string(&books).expect("whatever");
-    // println!("{}", s);
+    let s: String = serde_json::to_string(&books).expect("whatever");
+    println!("{}", s);
     Ok(())
 }
