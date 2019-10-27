@@ -517,24 +517,28 @@ def generate_rust_simple_types(simple_types: List[SimpleType]) -> List[str]:
 
     types: List[str] = []
     for simple_type in simple_types:  # type: SimpleType
-        # types.append(str(simple_type))
-        # TODO: document the descriptions along with the type/enum
+        if simple_type.description is not None:
+            types.append(f"/// {simple_type.description}")
+
         if simple_type.values is None:
             rust_type: str = python_type_to_rust_type(simple_type._type)
             types.append(f"pub type {simple_type.name} = {rust_type};")
             continue
         else:
+            # All of the enums are stringly typed, this is a sanity check
             assert simple_type._type == "string"
-            formatted_values: str = ", ".join(
-                # TODO: string enum, ser/deser, etc
-                # f'{value.name} = "{value.name}"'
-                # actually this may work anyway
-                value.name
-                for value in simple_type.values
-            )
+
+            variants: List[str] = []
+            for value in simple_type.values:
+                if value.description is not None:
+                    variants.append(f"/// {value.description}")
+                variants.append(f"{value.name},")
+            variants_str = "\n".join(variants)
             types.append(
                 f"""#[derive(Debug, Deserialize, Serialize)]
-pub enum {simple_type.name} {{ {formatted_values} }}"""
+pub enum {simple_type.name} {{
+{variants_str}
+}}"""
             )
             continue
 

@@ -13,12 +13,19 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 #[derive(Debug, Deserialize, Serialize)]
 pub enum MarketProjection {
+    /// If not selected then the competition will not be returned with marketCatalogue
     COMPETITION,
+    /// If not selected then the event will not be returned with marketCatalogue
     EVENT,
+    /// If not selected then the eventType will not be returned with marketCatalogue
     EVENT_TYPE,
+    /// If not selected then the start time will not be returned with marketCatalogue
     MARKET_START_TIME,
+    /// If not selected then the description will not be returned with marketCatalogue
     MARKET_DESCRIPTION,
+    /// If not selected then the runners will not be returned with marketCatalogue
     RUNNER_DESCRIPTION,
+    /// If not selected then the runner metadata will not be returned with marketCatalogue. If selected then RUNNER_DESCRIPTION will also be returned regardless of whether it is included as a market projection.
     RUNNER_METADATA,
 }
 #[derive(Debug, Deserialize, Serialize)]
@@ -26,6 +33,7 @@ pub enum PriceData {
     SP_AVAILABLE,
     SP_TRADED,
     EX_BEST_OFFERS,
+    /// EX_ALL_OFFERS trumps EX_BEST_OFFERS if both settings are present
     EX_ALL_OFFERS,
     EX_TRADED,
 }
@@ -43,18 +51,27 @@ pub enum OrderProjection {
 }
 #[derive(Debug, Deserialize, Serialize)]
 pub enum MarketStatus {
+    /// Inactive Market
     INACTIVE,
+    /// Open Market
     OPEN,
+    /// Suspended Market
     SUSPENDED,
+    /// Closed Market
     CLOSED,
 }
 #[derive(Debug, Deserialize, Serialize)]
 pub enum RunnerStatus {
+    /// ACTIVE
     ACTIVE,
+    /// WINNER
     WINNER,
+    /// LOSER
     LOSER,
     REMOVED_VACANT,
+    /// REMOVED
     REMOVED,
+    /// PLACED
     PLACED,
 }
 #[derive(Debug, Deserialize, Serialize)]
@@ -81,52 +98,81 @@ pub type CustomerOrderRef = String;
 pub type CustomerStrategyRef = String;
 #[derive(Debug, Deserialize, Serialize)]
 pub enum Side {
+    /// To back a team, horse or outcome is to bet on the selection to win. For Line markets a Back bet refers to a SELL line. A SELL line will win if the outcome is LESS THAN the taken line (price).
     BACK,
+    /// To lay a team, horse, or outcome is to bet on the selection to lose. For line markets a Lay bet refers to a BUY line. A BUY line will win if the outcome is MORE THAN the taken line (price).
     LAY,
 }
 #[derive(Debug, Deserialize, Serialize)]
 pub enum OrderStatus {
+    /// An asynchronous order is yet to be processed. Once the bet has been processed by the exchange (including waiting for any in-play delay), the result will be reported and available on the Exchange Stream API and API NG. Not a valid search criteria on MarketFilter
     PENDING,
+    /// An order that does not have any remaining unmatched portion.
     EXECUTION_COMPLETE,
+    /// An order that has a remaining unmatched portion.
     EXECUTABLE,
+    /// The order is no longer available for execution due to its time in force constraint. In the case of FILL_OR_KILL orders, this means the order has been killed because it could not be filled to your specifications. Not a valid search criteria on MarketFilter
     EXPIRED,
 }
 #[derive(Debug, Deserialize, Serialize)]
 pub enum OrderBy {
+    /// @Deprecated Use BY_PLACE_TIME instead. Order by placed time, then bet id.
     BY_BET,
+    /// Order by market id, then placed time, then bet id.
     BY_MARKET,
+    /// Order by placed time, then bet id. This is an alias of to be deprecated BY_BET.
     BY_PLACE_TIME,
+    /// Order by time of last matched fragment (if any), then placed time, then bet id. Filters out orders which have no matched date
     BY_MATCH_TIME,
+    /// Order by time of last voided fragment (if any), then by last match time, then placed time, then bet id. Filters out orders which have not been voided.
     BY_VOID_TIME,
+    /// Order by time of last settled fragment (if any), then by last match time, then placed time, then bet id. Filters out orders which have not been settled.
     BY_SETTLED_TIME,
 }
 #[derive(Debug, Deserialize, Serialize)]
 pub enum SortDir {
+    /// Order from earliest value to latest e.g. lowest betId is first in the results.
     EARLIEST_TO_LATEST,
+    /// Order from the latest value to the earliest e.g. highest betId is first in the results.
     LATEST_TO_EARLIEST,
 }
 #[derive(Debug, Deserialize, Serialize)]
 pub enum OrderType {
+    /// A normal exchange limit order for immediate execution
     LIMIT,
+    /// Limit order for the auction (SP)
     LIMIT_ON_CLOSE,
+    /// Market order for the auction (SP)
     MARKET_ON_CLOSE,
 }
 #[derive(Debug, Deserialize, Serialize)]
 pub enum MarketSort {
+    /// Minimum traded volume
     MINIMUM_TRADED,
+    /// Maximum traded volume
     MAXIMUM_TRADED,
+    /// Minimum available to match
     MINIMUM_AVAILABLE,
+    /// Maximum available to match
     MAXIMUM_AVAILABLE,
+    /// The closest markets based on their expected start time
     FIRST_TO_START,
+    /// The most distant markets based on their expected start time
     LAST_TO_START,
 }
 #[derive(Debug, Deserialize, Serialize)]
 pub enum MarketBettingType {
+    /// Odds Market
     ODDS,
+    /// Line markets operate at even-money odds of 2.0. However, price for these markets refers to the line positions available as defined by the markets min-max range and interval steps. Customers either Buy a line (LAY bet, winning if outcome is greater than the taken line (price)) or Sell a line (BACK bet, winning if outcome is less than the taken line (price)). If settled outcome equals the taken line, stake is returned.
     LINE,
+    /// Range Market
     RANGE,
+    /// Asian Handicap Market
     ASIAN_HANDICAP_DOUBLE_LINE,
+    /// Asian Single Line Market
     ASIAN_HANDICAP_SINGLE_LINE,
+    /// Sportsbook Odds Market. This type is deprecated and will be removed in future releases, when Sportsbook markets will be represented as ODDS market but with a different product type.
     FIXED_ODDS,
 }
 #[derive(Debug, Deserialize, Serialize)]
@@ -138,35 +184,62 @@ pub enum ExecutionReportStatus {
 }
 #[derive(Debug, Deserialize, Serialize)]
 pub enum ExecutionReportErrorCode {
+    /// The matcher's not healthy
     ERROR_IN_MATCHER,
+    /// The order itself has been accepted, but at least one (possibly all) actions have generated errors
     PROCESSED_WITH_ERRORS,
+    /// There is an error with an action that has caused the entire order to be rejected
     BET_ACTION_ERROR,
+    /// Order rejected due to the account's status (suspended, inactive, dup cards)
     INVALID_ACCOUNT_STATE,
+    /// Order rejected due to the account's wallet's status
     INVALID_WALLET_STATUS,
+    /// Account has exceeded its exposure limit or available to bet limit
     INSUFFICIENT_FUNDS,
+    /// The account has exceed the self imposed loss limit
     LOSS_LIMIT_EXCEEDED,
+    /// Market is suspended
     MARKET_SUSPENDED,
+    /// Market is not open for betting, either inactive, suspended or closed
     MARKET_NOT_OPEN_FOR_BETTING,
+    /// duplicate customer referece data submitted
     DUPLICATE_TRANSACTION,
+    /// Order cannot be accepted by the matcher due to the combination of actions. For example, bets being edited are not on the same market, or order includes both edits and placement
     INVALID_ORDER,
+    /// Market doesn't exist
     INVALID_MARKET_ID,
+    /// Business rules do not allow order to be placed
     PERMISSION_DENIED,
+    /// duplicate bet ids found
     DUPLICATE_BETIDS,
+    /// Order hasn't been passed to matcher as system detected there will be no state change
     NO_ACTION_REQUIRED,
+    /// The requested service is unavailable
     SERVICE_UNAVAILABLE,
+    /// The regulator rejected the order
     REJECTED_BY_REGULATOR,
+    /// A specific error code that relates to Spanish Exchange markets only which indicates that the bet placed contravenes the Spanish regulatory rules relating to loss chasing.
     NO_CHASING,
+    /// The underlying regulator service is not available.
     REGULATOR_IS_NOT_AVAILABLE,
+    /// The amount of orders exceeded the maximum amount allowed to be executed
     TOO_MANY_INSTRUCTIONS,
+    /// The supplied market version is invalid. Max length allowed for market version is 12.
     INVALID_MARKET_VERSION,
+    /// Had the instructions been carried out, the account's self imposed event exposure limit would have been exceeded.
     EVENT_EXPOSURE_LIMIT_EXCEEDED,
+    /// Had the instructions been carried out, the account's self imposed matched event exposure limit would have been exceeded.
     EVENT_MATCHED_EXPOSURE_LIMIT_EXCEEDED,
+    /// Betting on this event is blocked due to exposure limit breach. unblockMarketGroup operation should be invoked to enable betting.
     EVENT_BLOCKED,
 }
 #[derive(Debug, Deserialize, Serialize)]
 pub enum PersistenceType {
+    /// Lapse the order at turn-in-play
     LAPSE,
+    /// Persist the order to in-play
     PERSIST,
+    /// Put the order into the auction (SP) at turn-in-play
     MARKET_ON_CLOSE,
 }
 #[derive(Debug, Deserialize, Serialize)]
@@ -177,82 +250,135 @@ pub enum InstructionReportStatus {
 }
 #[derive(Debug, Deserialize, Serialize)]
 pub enum InstructionReportErrorCode {
+    /// Bet size is invalid for your currency or your regulator
     INVALID_BET_SIZE,
+    /// Runner does not exist, includes vacant traps in greyhound racing
     INVALID_RUNNER,
+    /// Bet cannot be cancelled or modified as it has already been taken or has lapsed Includes attempts to cancel/modify market on close BSP bets and cancelling limit on close BSP bets
     BET_TAKEN_OR_LAPSED,
+    /// No result was received from the matcher in a timeout configured for the system
     BET_IN_PROGRESS,
+    /// Runner has been removed from the event
     RUNNER_REMOVED,
+    /// Attempt to edit a bet on a market that has closed.
     MARKET_NOT_OPEN_FOR_BETTING,
+    /// The action has caused the account to exceed the self imposed loss limit
     LOSS_LIMIT_EXCEEDED,
+    /// Market now closed to bsp betting. Turned in-play or has been reconciled
     MARKET_NOT_OPEN_FOR_BSP_BETTING,
+    /// Attempt to edit down the price of a bsp limit on close lay bet, or edit up the price of a limit on close back bet
     INVALID_PRICE_EDIT,
+    /// Odds not on price ladder - either edit or placement
     INVALID_ODDS,
+    /// Insufficient funds available to cover the bet action. Either the exposure limit or available to bet limit would be exceeded
     INSUFFICIENT_FUNDS,
+    /// Invalid persistence type for this market, e.g. KEEP for a non bsp market
     INVALID_PERSISTENCE_TYPE,
+    /// A problem with the matcher prevented this action completing successfully
     ERROR_IN_MATCHER,
+    /// The order contains a back and a lay for the same runner at overlapping prices. This would guarantee a self match. This also applies to BSP limit on close bets
     INVALID_BACK_LAY_COMBINATION,
+    /// The action failed because the parent order failed
     ERROR_IN_ORDER,
+    /// Bid type is mandatory
     INVALID_BID_TYPE,
+    /// Bet for id supplied has not been found
     INVALID_BET_ID,
+    /// Bet cancelled but replacement bet was not placed
     CANCELLED_NOT_PLACED,
+    /// Action failed due to the failure of a action on which this action is dependent
     RELATED_ACTION_FAILED,
+    /// the action does not result in any state change. eg changing a persistence to it's current value
     NO_ACTION_REQUIRED,
+    /// The minFillSize must be greater than zero and less than or equal to the order's size. The minFillSize cannot be less than the minimum bet size for your currency
     INVALID_MIN_FILL_SIZE,
+    /// The supplied customer order reference is too long.
     INVALID_CUSTOMER_ORDER_REF,
+    /// You may only specify a time in force on either the place request OR on individual limit order instructions (not both), since the implied behaviors are incompatible.
     TIME_IN_FORCE_CONFLICT,
+    /// You have specified a persistence type for a FILL_OR_KILL order, which is nonsensical because no umatched portion can remain after the order has been placed.
     UNEXPECTED_PERSISTENCE_TYPE,
+    /// You have specified a time in force of FILL_OR_KILL, but have included a non-LIMIT order type.
     INVALID_ORDER_TYPE,
+    /// You have specified a minFillSize on a limit order, where the limit order's time in force is not FILL_OR_KILL. Using minFillSize is not supported where the time in force of the request (as opposed to an order) is FILL_OR_KILL.
     UNEXPECTED_MIN_FILL_SIZE,
+    /// The supplied customer strategy reference is too long.
     INVALID_CUSTOMER_STRATEGY_REF,
+    /// Your bet is lapsed. There is better odds than requested available in the market, but your preferences don't allow the system to match your bet against better odds. Change your betting preferences to accept better odds if you don't want to receive this error.
     BET_LAPSED_PRICE_IMPROVEMENT_TOO_LARGE,
 }
 #[derive(Debug, Deserialize, Serialize)]
 pub enum RollupModel {
+    /// The volumes will be rolled up to the minimum value which is >= rollupLimit.
     STAKE,
+    /// The volumes will be rolled up to the minimum value where the payout( price * volume ) is >= rollupLimit. On a LINE market, volumes will be rolled up where payout( 2.0 * volume ) is >= rollupLimit.
     PAYOUT,
+    /// The volumes will be rolled up to the minimum value which is >= rollupLimit, until a lay price threshold. There after, the volumes will be rolled up to the minimum value such that the liability >= a minimum liability. Not supported as yet.
     MANAGED_LIABILITY,
+    /// No rollup will be applied. However the volumes will be filtered by currency specific minimum stake unless overridden specifically for the channel.
     NONE,
 }
 #[derive(Debug, Deserialize, Serialize)]
 pub enum GroupBy {
+    /// A roll up of settled P&L, commission paid and number of bet orders, on a specified event type
     EVENT_TYPE,
+    /// A roll up of settled P&L, commission paid and number of bet orders, on a specified event
     EVENT,
+    /// A roll up of settled P&L, commission paid and number of bet orders, on a specified market
     MARKET,
+    /// A roll up of settled P&L and the number of bet orders, on a specified runner within a specified market
     RUNNER,
+    /// An averaged roll up of settled P&L, and number of bets, on the specified side of a specified selection within a specified market, that are either settled or voided
     SIDE,
+    /// The P&L, commission paid, side and regulatory information etc, about each individual bet order
     BET,
+    /// A roll up of settled P&L and the number of bet orders, on a specified strategy across the Betfair Exchange
     STRATEGY,
 }
 #[derive(Debug, Deserialize, Serialize)]
 pub enum BetStatus {
+    /// A matched bet that was settled normally
     SETTLED,
+    /// A matched bet that was subsequently voided by Betfair, before, during or after settlement
     VOIDED,
+    /// Unmatched bet that was cancelled by Betfair (for example at turn in play).
     LAPSED,
+    /// Unmatched bet that was cancelled by an explicit customer action.
     CANCELLED,
 }
 #[derive(Debug, Deserialize, Serialize)]
 pub enum TimeInForce {
+    /// Execute the transaction immediately and completely (filled to size or between minFillSize and size) or not at all (cancelled). For LINE markets Volume Weighted Average Price (VWAP) functionality is disabled.
     FILL_OR_KILL,
 }
 #[derive(Debug, Deserialize, Serialize)]
 pub enum BetTargetType {
+    /// The total payout requested on a LimitOrder. BetTargetType bets are invalid for LINE markets.
     PAYOUT,
+    /// The payout requested minus the calculated size at which this LimitOrder is to be placed. BetTargetType bets are invalid for LINE markets.
     BACKERS_PROFIT,
 }
 #[derive(Debug, Deserialize, Serialize)]
 pub enum PriceLadderType {
+    /// Price ladder increments traditionally used for Odds Markets.
     CLASSIC,
+    /// Price ladder with the finest available increment, traditionally used for Asian Handicap markets.
     FINEST,
+    /// Price ladder used for LINE markets. Refer to MarketLineRangeInfo for more details.
     LINE_RANGE,
 }
 #[derive(Debug, Deserialize, Serialize)]
 pub enum MarketGroupType {
+    /// An exchange event that has markets under it. EventId should be used as groupId parameter of MarketGroup type.
     EVENT,
 }
 #[derive(Debug, Deserialize, Serialize)]
 pub enum LimitBreachActionType {
+    /// Bet placements for market group will be rejected if they breach limit. For every bet placement exposure values will be compared against limit values.
     REJECT_BETS,
+    /// Bet placements for market group will be rejected. Once the limit is breached account should use unblockMarketGroup to unlock market group.  Note that this type is only applicable to matched exposure limit
     STOP_BETTING,
+    /// Bet placements for market group will be rejected. Service will initiate a request to cancel unmatched bets under market group. Once the limit is breached account should use unblockMarketGroup to unlock market group.  Note that this type is only applicable to matched exposure limit
     TEAR_DOWN_MARKET_GROUP,
 }
 #[derive(Debug, Deserialize, Serialize)]
