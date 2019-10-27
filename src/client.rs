@@ -34,6 +34,7 @@ struct LoginResponse {
     loginStatus: String, // TODO enum this
 }
 
+/// A container for the essential credentials required for the Betfair APING.
 pub struct BFCredentials {
     username: String,
     password: String,
@@ -56,7 +57,6 @@ impl BFCredentials {
             app_key,
         })
     }
-
     fn as_login_request_form(&self) -> LoginRequestForm {
         LoginRequestForm {
             username: self.username.clone(),
@@ -71,6 +71,8 @@ impl BFCredentials {
     }
 }
 
+/// A thread-safe client with automatic login implementing all methods of the
+/// Betfair APING.
 pub struct BFClient {
     client: reqwest::Client,
     session_token: Arc<RwLock<Option<String>>>,
@@ -158,8 +160,7 @@ impl BFClient {
         }
     }
 
-    /// Perform a request, logging in if necessary, fail if login
-    pub fn req<T1: Serialize, T2: DeserializeOwned>(
+    pub(super) fn req<T1: Serialize, T2: DeserializeOwned>(
         &self,
         req: RpcRequest<T1>,
     ) -> Result<RpcResponse<T2>> {
