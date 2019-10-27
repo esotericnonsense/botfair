@@ -21,6 +21,17 @@
 //! Coming soon: automatic keep-alive.
 //!
 //! ## Example
+//! Note that `botfair` requires your certificate to be in `pfx` format.
+//! In order to achieve this given a key and crt file, you can use the
+//! following openssl command:
+//!
+//! ```
+//! openssl pkcs12 -export -out client.pfx \
+//!     -inkey client.key -in client.crt
+//! ```
+//!
+//! `botfair` assumes no password protection for the `pfx` file.
+//!
 //! ```
 //! use botfair::generated_types::{MarketBook, MarketCatalogue};
 //! use botfair::generated_types::{MarketFilter, MarketId};
