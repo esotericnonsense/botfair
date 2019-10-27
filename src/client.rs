@@ -217,32 +217,55 @@ impl BFClient {
     ) -> Result<RpcResponse<T2>> {
         // Initially acquire the token via a read lock
 
-        trace!("Taking token read lock");
+        trace!("req: taking token read lock");
         let token_lock = self.session_token.read().unwrap();
         let mut token = token_lock.clone();
         drop(token_lock);
-        trace!("Dropped token read lock");
+        trace!("req: dropped token read lock");
 
         loop {
-            // TODO: exponential backoff
-
-            info!("Performing a request");
+            info!("req: attempting request");
             match self.req_internal(&token, &req) {
-                Ok(resp) => return Ok(resp),
+                Ok(resp) => {
+                    info!("req: request successful");
+                    break Ok(resp);
+                }
                 Err(_) => {
-                    info!("Not logged in");
                     // Assume the only error possible is an auth error
+                    // TODO: check if it's an exception, auth error,
+                    // etc; an exception should just be propagated to the
+                    // caller
 
-                    trace!("Taking token write lock");
+                    info!("req: login required");
+                    debug!("req: taking token write lock");
                     let mut token_lock = self.session_token.write().unwrap();
 
-                    if *token_lock == token {
-                        *token_lock = Some(self.login()?);
+                    if token != *token_lock {
+                        // Another thread has already performed the login.
+                        token = token_lock.clone();
+                        continue;
                     }
-                    token = token_lock.clone();
 
-                    drop(token_lock); // drops at end of scope but we log
-                    trace!("Dropped token read lock");
+                    token = loop {
+                        info!("login: sending request");
+                        match self.login() {
+                            Ok(token) => {
+                                info!("login: success");
+                                break Some(token);
+                            }
+                            Err(e) => {
+                                warn!("login: failed {:?}", e);
+
+                                // TODO: exponential backoff
+                                warn!("login: sleeping for 5000ms");
+                                thread::sleep(Duration::from_millis(5000));
+                            }
+                        }
+                    };
+
+                    *token_lock = token.clone();
+                    drop(token_lock); // explicit drop for logging purposes
+                    debug!("req: dropped token write lock");
                 }
             }
         }
@@ -265,7 +288,6 @@ impl BFClient {
 
         let login_request_form = self.creds.as_login_request_form();
 
-        info!("LoginRequest ...");
         let login_response: LoginResponse = client
             .post(CERTLOGIN_URI)
             .header(
@@ -275,9 +297,6 @@ impl BFClient {
             .form(&login_request_form)
             .send()?
             .json()?;
-
-        info!("LoginResponse: {:?}", login_response.loginStatus);
-
         match login_response.sessionToken {
             Some(token) => Ok(token),
             None => Err(Error::BFLoginFailure(format!(
