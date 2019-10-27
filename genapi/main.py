@@ -659,6 +659,8 @@ self.req(rpc_request).map(|x| x.into_inner())
 
         function_signature = f"""fn {operation.name}({formatted_params_args}) ->
 Result<{resp_type}>"""
+        if operation.description is not None:
+            functions.append(f"/// {operation.description}")
         functions.append(
             f"""#[allow(dead_code)]
 pub {function_signature} {{ {function_interior} }}"""

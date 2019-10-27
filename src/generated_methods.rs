@@ -13,6 +13,7 @@ use crate::json_rpc::RpcRequest;
 use crate::result::Result;
 use chrono::{DateTime, Utc};
 impl crate::client::BFClient {
+    /// Returns a list of Event Types (i.e. Sports) associated with the markets selected by the MarketFilter.
     #[allow(dead_code)]
     pub fn listEventTypes(
         &self,
@@ -25,6 +26,7 @@ impl crate::client::BFClient {
             RpcRequest::new("SportsAPING/v1.0/listEventTypes".to_owned(), req);
         self.req(rpc_request).map(|x| x.into_inner())
     }
+    /// Returns a list of Competitions (i.e., World Cup 2013) associated with the markets selected by the MarketFilter. Currently only Football markets have an associated competition.
     #[allow(dead_code)]
     pub fn listCompetitions(
         &self,
@@ -39,6 +41,7 @@ impl crate::client::BFClient {
         );
         self.req(rpc_request).map(|x| x.into_inner())
     }
+    /// Returns a list of time ranges in the granularity specified in the request (i.e. 3PM to 4PM, Aug 14th to Aug 15th) associated with the markets selected by the MarketFilter.
     #[allow(dead_code)]
     pub fn listTimeRanges(
         &self,
@@ -53,6 +56,7 @@ impl crate::client::BFClient {
             RpcRequest::new("SportsAPING/v1.0/listTimeRanges".to_owned(), req);
         self.req(rpc_request).map(|x| x.into_inner())
     }
+    /// Returns a list of Events (i.e, Reading vs. Man United) associated with the markets selected by the MarketFilter.
     #[allow(dead_code)]
     pub fn listEvents(
         &self,
@@ -64,6 +68,7 @@ impl crate::client::BFClient {
             RpcRequest::new("SportsAPING/v1.0/listEvents".to_owned(), req);
         self.req(rpc_request).map(|x| x.into_inner())
     }
+    /// Returns a list of market types (i.e. MATCH_ODDS, NEXT_GOAL) associated with the markets selected by the MarketFilter. The market types are always the same, regardless of locale.
     #[allow(dead_code)]
     pub fn listMarketTypes(
         &self,
@@ -78,6 +83,7 @@ impl crate::client::BFClient {
         );
         self.req(rpc_request).map(|x| x.into_inner())
     }
+    /// Returns a list of Countries associated with the markets selected by the MarketFilter.
     #[allow(dead_code)]
     pub fn listCountries(
         &self,
@@ -90,6 +96,7 @@ impl crate::client::BFClient {
             RpcRequest::new("SportsAPING/v1.0/listCountries".to_owned(), req);
         self.req(rpc_request).map(|x| x.into_inner())
     }
+    /// Returns a list of Venues (i.e. Cheltenham, Ascot) associated with the markets selected by the MarketFilter. Currently, only Horse Racing markets are associated with a Venue.
     #[allow(dead_code)]
     pub fn listVenues(
         &self,
@@ -101,6 +108,7 @@ impl crate::client::BFClient {
             RpcRequest::new("SportsAPING/v1.0/listVenues".to_owned(), req);
         self.req(rpc_request).map(|x| x.into_inner())
     }
+    /// Returns a list of information about markets that does not change (or changes very rarely). You use listMarketCatalogue to retrieve the name of the market, the names of selections and other information about markets.
     #[allow(dead_code)]
     pub fn listMarketCatalogue(
         &self,
@@ -124,6 +132,7 @@ impl crate::client::BFClient {
             );
         self.req(rpc_request).map(|x| x.into_inner())
     }
+    /// Returns a list of dynamic data about markets. Dynamic data includes prices, the status of the market, the status of selections, the traded volume, and the status of any orders you have placed in the market.
     #[allow(dead_code)]
     pub fn listMarketBook(
         &self,
@@ -156,6 +165,7 @@ impl crate::client::BFClient {
             RpcRequest::new("SportsAPING/v1.0/listMarketBook".to_owned(), req);
         self.req(rpc_request).map(|x| x.into_inner())
     }
+    /// Returns a list of dynamic data about a market and a specified runner. Dynamic data includes prices, the status of the market, the status of selections, the traded volume, and the status of any orders you have placed in the market.
     #[allow(dead_code)]
     pub fn listRunnerBook(
         &self,
@@ -192,6 +202,7 @@ impl crate::client::BFClient {
             RpcRequest::new("SportsAPING/v1.0/listRunnerBook".to_owned(), req);
         self.req(rpc_request).map(|x| x.into_inner())
     }
+    /// Returns a list of your current orders. Optionally you can filter and sort your current orders using the various parameters, setting none of the parameters will return all of your current orders, up to a maximum of 1000 bets, ordered BY_BET and sorted EARLIEST_TO_LATEST. To retrieve more than 1000 orders, you need to make use of the fromRecord and recordCount parameters.
     #[allow(dead_code)]
     pub fn listCurrentOrders(
         &self,
@@ -227,6 +238,7 @@ impl crate::client::BFClient {
             );
         self.req(rpc_request).map(|x| x.into_inner())
     }
+    /// Returns a List of bets based on the bet status, ordered by settled date
     #[allow(dead_code)]
     pub fn listClearedOrders(
         &self,
@@ -270,6 +282,7 @@ impl crate::client::BFClient {
             );
         self.req(rpc_request).map(|x| x.into_inner())
     }
+    /// Place new orders into market. LIMIT orders below the minimum bet size are allowed if there is an unmatched bet at the same price in the market. This operation is atomic in that all orders will be placed or none will be placed.
     #[allow(dead_code)]
     pub fn placeOrders(
         &self,
@@ -292,6 +305,7 @@ impl crate::client::BFClient {
             RpcRequest::new("SportsAPING/v1.0/placeOrders".to_owned(), req);
         self.req(rpc_request).map(|x| x.into_inner())
     }
+    /// Cancel all bets OR cancel all bets on a market OR fully or partially cancel particular orders on a market. Only LIMIT orders an be cancelled or partially cancelled once placed.
     #[allow(dead_code)]
     pub fn cancelOrders(
         &self,
@@ -308,6 +322,7 @@ impl crate::client::BFClient {
             RpcRequest::new("SportsAPING/v1.0/cancelOrders".to_owned(), req);
         self.req(rpc_request).map(|x| x.into_inner())
     }
+    /// This operation is logically a bulk cancel followed by a bulk place. The cancel is completed first then the new orders are placed. The new orders will be placed atomically in that they will all be placed or none will be placed. In the case where the new orders cannot be placed the cancellations will not be rolled back. See ReplaceInstruction.
     #[allow(dead_code)]
     pub fn replaceOrders(
         &self,
@@ -328,6 +343,7 @@ impl crate::client::BFClient {
             RpcRequest::new("SportsAPING/v1.0/replaceOrders".to_owned(), req);
         self.req(rpc_request).map(|x| x.into_inner())
     }
+    /// Update non-exposure changing fields
     #[allow(dead_code)]
     pub fn updateOrders(
         &self,
@@ -344,6 +360,7 @@ impl crate::client::BFClient {
             RpcRequest::new("SportsAPING/v1.0/updateOrders".to_owned(), req);
         self.req(rpc_request).map(|x| x.into_inner())
     }
+    /// Retrieve profit and loss for a given list of markets. The values are calculated using matched bets and optionally settled bets. Only odds markets are implemented, markets of other types are silently ignored.
     #[allow(dead_code)]
     pub fn listMarketProfitAndLoss(
         &self,
@@ -366,6 +383,7 @@ impl crate::client::BFClient {
             );
         self.req(rpc_request).map(|x| x.into_inner())
     }
+    /// Create/update default exposure limit for market groups of given type. New value and breach action will be immediately applied to existing instances of this type (unless overridden using setExposureLimitForMarketGroup). If default values are overridden for market groups (using setExposureLimitForMarketGroup), overrides will NOT be touched. In order to clear this limit "removeDefaultExposureLimitForMarketGroups" operation should be used. It's not allowed to set default limit to an empty limit (see type ExposureLimit).
     #[allow(dead_code)]
     pub fn setDefaultExposureLimitForMarketGroups(
         &self,
@@ -386,6 +404,7 @@ impl crate::client::BFClient {
         );
         self.req(rpc_request).map(|x| x.into_inner())
     }
+    /// Create/update exposure limit for a market group. New limit will be applied immediately (even if a default limit exists for this type). The limit will be deleted upon account action (see deleteMarketGroupExposureLimit) or when no active markets remain under market group. It is possible to "invalidate" default limit for a specific group by using a "empty" limit (see type ExposureLimit). Upon successful execution of the request, the effective limit for this group will be the one set by this request (Properties will NOT be inherited from default limit).
     #[allow(dead_code)]
     pub fn setExposureLimitForMarketGroup(
         &self,
@@ -401,6 +420,7 @@ impl crate::client::BFClient {
             );
         self.req(rpc_request).map(|x| x.into_inner())
     }
+    /// Remove default exposure limit for a market group type. This operation will NOT remove/update any market group limits.
     #[allow(dead_code)]
     pub fn removeDefaultExposureLimitForMarketGroups(
         &self,
@@ -419,6 +439,7 @@ impl crate::client::BFClient {
         );
         self.req(rpc_request).map(|x| x.into_inner())
     }
+    /// Delete exposure limit for a market group. If a default exposure limit exist for market type, it takes effect immediately.
     #[allow(dead_code)]
     pub fn removeExposureLimitForMarketGroup(
         &self,
@@ -434,6 +455,7 @@ impl crate::client::BFClient {
             );
         self.req(rpc_request).map(|x| x.into_inner())
     }
+    /// Response to this request returns default group limit and group limits grouped by type. If marketGroupTypeFilter is not populated values for all types are returned. The response will always contain the default limit. It is possible to control which groups to return using marketGroupsFilter parameter. If marketGroupsFilter is not set all group limits are returned. If an emtpy list is passed only default limit(s) is returned. When marketGroupTypeFilter and marketGroupsFilter used together, all groups in marketGroupsFilter are required to be of same type (type used in marketGroupTypeFilter).
     #[allow(dead_code)]
     pub fn listExposureLimitsForMarketGroups(
         &self,
@@ -453,6 +475,7 @@ impl crate::client::BFClient {
             );
         self.req(rpc_request).map(|x| x.into_inner())
     }
+    /// Unblock a market group after it has been blocked due to the breach of a previously set exposure limit.
     #[allow(dead_code)]
     pub fn unblockMarketGroup(
         &self,
@@ -467,6 +490,7 @@ impl crate::client::BFClient {
             );
         self.req(rpc_request).map(|x| x.into_inner())
     }
+    /// Retrieves events from exposure reuse enabled events list. To edit this list use addExposureReuseEnabledEvents and removeExposureReuseEnabledEvents operations.
     #[allow(dead_code)]
     pub fn getExposureReuseEnabledEvents(&self) -> Result<Vec<i64>> {
         let rpc_request: RpcRequest<()> = RpcRequest::new(
@@ -475,6 +499,7 @@ impl crate::client::BFClient {
         );
         self.req(rpc_request).map(|x| x.into_inner())
     }
+    /// Enables events for exposure reuse by appending them to the current list of events already enabled.
     #[allow(dead_code)]
     pub fn addExposureReuseEnabledEvents(
         &self,
@@ -489,6 +514,7 @@ impl crate::client::BFClient {
             );
         self.req(rpc_request).map(|x| x.into_inner())
     }
+    /// Removes events from exposure reuse enabled events list.
     #[allow(dead_code)]
     pub fn removeExposureReuseEnabledEvents(
         &self,
