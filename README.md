@@ -1,19 +1,22 @@
 # `botfair`
 
-Rust bindings for the Betfair SportsAPING.
-Automatic login.
-Coming soon: automatic keep-alive.
+The `botfair` crate provides Rust bindings for the Betfair SportsAPING.
+
+Login and keep-alive are handled automatically by the BFClient.
 
 https://git.esotericnonsense.com/pub/botfair.git - main repository
+
 https://github.com/esotericnonsense/botfair.git - github repo, for PRs etc
 
 ## Contact
 
 Daniel Edgecumbe (esotericnonsense)
+
 [botfair@esotericnonsense.com](mailto:botfair@esotericnonsense.com)
 
 ## Usage
 Note that `botfair` requires your certificate to be in `pfx` format.
+
 In order to achieve this given a key and crt file, you can use the following
 openssl command:
 
