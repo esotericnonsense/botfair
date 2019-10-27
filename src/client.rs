@@ -126,38 +126,54 @@ impl BFClient {
         }))
     }
 
+    /// This function is run once per BFClient as a thread. It ensures that the
+    /// correct keepalive requests are made to the Betfair API such that the
+    /// token does not expire.
+    ///
+    /// Note that it does not automatically re-login on expiry; for that to
+    /// occur, a request must explicitly be made.
+    ///
+    /// In the future this could be implemented, which would reduce the latency
+    /// of the first call after a (very) long spell of nothing, the so-called
+    /// 'cold start problem'.
     fn keepalive_thread(
         session_token: Arc<RwLock<Option<String>>>,
         proxy_uri: Option<String>,
         rx: mpsc::Receiver<()>,
     ) {
         info!("New keepalive thread spawned for BFClient");
+        let mut expired_token: Option<String> = None;
         loop {
             match rx.recv_timeout(Duration::from_millis(5000)) {
                 Ok(_) => {
-                    warn!("got destructor signal, thread finishing");
+                    warn!("keepalive: destructor hit, exiting");
                     break;
                 }
                 Err(_) => {
                     let maybe_token: Option<String> = session_token
                         .read()
-                        .expect(
-                            "keepalive thread could not lock session token",
-                        )
+                        .expect("keepalive: could not lock session token")
                         .clone();
+
+                    if maybe_token.is_some() && maybe_token == expired_token {
+                        // TODO: login instead
+                        warn!("keepalive: skipping, as token is expired");
+                    }
+
                     match maybe_token {
                         None => {
-                            debug!("no keepalive required as no token");
+                            debug!("keepalive: skipping, as no token");
                         }
                         Some(token) => {
-                            warn!("attempting keepalive");
+                            debug!("keepalive: attempting");
                             match keepalive(&token, &proxy_uri) {
                                 Ok(()) => {
-                                    info!("successful keepalive");
+                                    debug!("keepalive: successful");
                                 }
                                 Err(e) => {
-                                    warn!("keepalive failed: {:?}", e);
-                                    // TODO login
+                                    info!("keepalive failed: {:?}", e);
+                                    // TODO: login instead
+                                    expired_token = Some(token);
                                 }
                             };
                         }
@@ -284,7 +300,6 @@ fn keepalive(token: &String, proxy_uri: &Option<String>) -> Result<()> {
         None => Client::new(),
     };
 
-    info!("KeepAliveRequest ...");
     let keep_alive_response: KeepAliveResponse = client
         .get(KEEPALIVE_URI)
         .header("Accept", "application/json")
@@ -297,16 +312,10 @@ fn keepalive(token: &String, proxy_uri: &Option<String>) -> Result<()> {
         .json()?;
 
     match keep_alive_response.status {
-        KeepAliveStatus::SUCCESS => {
-            info!("KeepAliveResponse was successful");
-            Ok(())
-        }
-        KeepAliveStatus::FAIL => {
-            warn!("KeepAliveResponse: {:?}", keep_alive_response.error);
-            Err(Error::BFKeepAliveFailure(
-                keep_alive_response.error.unwrap(),
-            ))
-        }
+        KeepAliveStatus::SUCCESS => Ok(()),
+        KeepAliveStatus::FAIL => Err(Error::BFKeepAliveFailure(
+            keep_alive_response.error.unwrap(),
+        )),
     }
 }
 
