@@ -1,4 +1,4 @@
-# botfair
+# `botfair`
 
 Rust bindings for the Betfair SportsAPING.
 Automatic login.
@@ -13,6 +13,17 @@ Daniel Edgecumbe (esotericnonsense)
 [botfair@esotericnonsense.com](mailto:botfair@esotericnonsense.com)
 
 ## Usage
+Note that `botfair` requires your certificate to be in `pfx` format.
+In order to achieve this given a key and crt file, you can use the following
+openssl command:
+
+```
+openssl pkcs12 -export -out client.pfx \
+    -inkey client.key -in client.crt
+```
+
+`botfair` assumes no password protection for the `pfx` file.
+
 ```
 let bf_creds = BFCredentials::new(
     "my_username".to_owned(),
@@ -65,7 +76,7 @@ servers and runs a python script on them to generate the Rust bindings.
 
 ## License
 
-For open source software, botfair is subject to the GNU AGPLv3, contained
+For open source software, `botfair` is subject to the GNU AGPLv3, contained
 in the document LICENSE.AGPLv3 which should be distributed with the software.
 
 This means that you need to licence your software under the same terms. In
