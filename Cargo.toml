@@ -1,6 +1,6 @@
 [package]
 name = "botfair"
-version = "0.1.99"
+version = "0.2.0"
 description = "rust bindings for Betfair's SportsAPING"
 keywords = ["betfair", "jsonrpc", "aping", "sports", "betting"]
 repository = "https://git.esotericnonsense.com/pub/botfair.git"
