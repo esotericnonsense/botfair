@@ -17,38 +17,21 @@
 #[macro_use]
 extern crate log;
 
+use crate::json_rpc::{RpcRequest, RpcResponse};
+use crate::result::{Error, Result};
 use reqwest::{Client, Identity};
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 use std::sync::{Arc, RwLock};
 
-// TODO this should not be public, re-export relevant parts
-pub mod generated_api;
+mod generated_methods;
+mod generated_requests;
+pub mod generated_types;
 mod json_rpc;
-
-use crate::json_rpc::{RpcRequest, RpcResponse};
-
-#[derive(Debug)]
-pub enum Error {
-    Io(std::io::Error),
-    Reqwest(reqwest::Error),
-    BFLoginFailure(String),
-    General(String),
-    Other,
-}
-
-pub type Result<T> = std::result::Result<T, Error>;
-
-impl From<std::io::Error> for Error {
-    fn from(e: std::io::Error) -> Self {
-        Error::Io(e)
-    }
-}
-
-impl From<reqwest::Error> for Error {
-    fn from(e: reqwest::Error) -> Self {
-        Error::Reqwest(e)
-    }
+pub mod result;
+pub mod prelude {
+    pub use crate::BFClient;
+    pub use crate::BFCredentials;
 }
 
 #[derive(Debug, Serialize)]
@@ -129,7 +112,7 @@ impl BFClient {
     }
 
     // TODO keepalive
-    // https://identitysso.betfair.com/api/keepAliveo
+    // https://identitysso.betfair.com/api/keepAlive
     // Accept (mandatory)
     // Header that signals that the response should be returned as JSON	application/json
     // X-Authentication (mandatory)

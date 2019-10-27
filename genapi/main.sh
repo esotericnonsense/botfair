@@ -72,8 +72,12 @@ fi
 
 _output="$(realpath ../src/generated_api.rs)"
 
+echo "Removing old generated files..." >&2
+rm -f ../src/generated_*.rs
 echo "Writing generated API to ${_output}" >&2
-./main.py | rustfmt --config max_width=79 > "${_output}"
+./main.py
+echo "Running rustfmt" >&2
+rustfmt --config max_width=79 ../src/generated_*.rs
 
 echo "---" >&2
 echo "Done!" >&2
