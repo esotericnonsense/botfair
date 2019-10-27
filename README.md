@@ -8,6 +8,14 @@ https://git.esotericnonsense.com/pub/botfair.git - main repository
 
 https://github.com/esotericnonsense/botfair.git - github repo, for PRs etc
 
+## Warranty
+
+> This program is distributed in the hope that it will be useful,
+>    but WITHOUT ANY WARRANTY; without even the implied warranty of
+>    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+Paid support, consulting, and contracting services are available.
+
 ## Contact
 
 Daniel Edgecumbe (esotericnonsense)

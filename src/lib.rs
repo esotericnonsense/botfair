@@ -22,6 +22,14 @@
 //! The BFClient class implements Sync and so can safely be wrapped in an Arc
 //! for multithreaded use with the same session token.
 //!
+//! ## Warranty
+//!
+//! > This program is distributed in the hope that it will be useful,
+//! >    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//! >    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+//!
+//! Paid support, consulting, and contracting services are available.
+//!
 //! ## Example
 //! Note that `botfair` requires your certificate to be in `pfx` format.
 //! In order to achieve this given a key and crt file, you can use the
