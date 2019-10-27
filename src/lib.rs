@@ -25,7 +25,7 @@
 //! In order to achieve this given a key and crt file, you can use the
 //! following openssl command:
 //!
-//! ```
+//! ```text
 //! openssl pkcs12 -export -out client.pfx \
 //!     -inkey client.key -in client.crt
 //! ```
