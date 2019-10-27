@@ -17,8 +17,10 @@
 //! # botfair
 //!
 //! The `botfair` crate provides Rust bindings for the Betfair SportsAPING.
-//! Automatic login.
-//! Coming soon: automatic keep-alive.
+//! Login and keep-alive are handled automatically by the BFClient.
+//!
+//! The BFClient class implements Sync and so can safely be wrapped in an Arc
+//! for multithreaded use with the same session token.
 //!
 //! ## Example
 //! Note that `botfair` requires your certificate to be in `pfx` format.

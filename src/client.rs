@@ -96,7 +96,7 @@ impl BFClient {
     pub fn new(
         creds: BFCredentials,
         proxy_uri: Option<String>,
-    ) -> Result<Arc<Self>> {
+    ) -> Result<Self> {
         let client: reqwest::Client = match &proxy_uri {
             Some(uri) => {
                 let proxy = reqwest::Proxy::all(uri)?;
@@ -117,13 +117,13 @@ impl BFClient {
             tx
         };
 
-        Ok(Arc::new(BFClient {
+        Ok(BFClient {
             client,
             destructor,
             session_token,
             creds,
             proxy_uri,
-        }))
+        })
     }
 
     /// This function is run once per BFClient as a thread. It ensures that the
