@@ -716,7 +716,7 @@ def main() -> None:
         ]
         for l in a:
             f.write(l + "\n")
-        f.write("impl crate::BFClient {\n")
+        f.write("impl crate::client::BFClient {\n")
         for l in rust_operations.functions:
             f.write(l + "\n")
         f.write("}\n")

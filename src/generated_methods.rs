@@ -8,7 +8,7 @@ use crate::generated_types::*;
 use crate::json_rpc::RpcRequest;
 use crate::result::Result;
 use chrono::{DateTime, Utc};
-impl crate::BFClient {
+impl crate::client::BFClient {
     #[allow(dead_code)]
     pub fn listEventTypes(
         &self,
