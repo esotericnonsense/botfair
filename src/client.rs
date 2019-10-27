@@ -85,7 +85,7 @@ pub struct BFClient {
 
 impl Drop for BFClient {
     fn drop(&mut self) {
-        info!("dropping BFClient!");
+        trace!("client: destructor triggered; signalling keepalive thread");
         self.destructor
             .send(())
             .expect("unable to signal keepalive thread");
@@ -146,7 +146,7 @@ impl BFClient {
         loop {
             match rx.recv_timeout(Duration::from_millis(60000)) {
                 Ok(_) => {
-                    warn!("keepalive: destructor hit, exiting");
+                    warn!("keepalive: destructor signal caught, exiting");
                     break;
                 }
                 Err(_) => {
