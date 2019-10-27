@@ -141,10 +141,10 @@ impl BFClient {
         proxy_uri: Option<String>,
         rx: mpsc::Receiver<()>,
     ) {
-        info!("New keepalive thread spawned for BFClient");
+        trace!("keepalive: thread spawned");
         let mut expired_token: Option<String> = None;
         loop {
-            match rx.recv_timeout(Duration::from_millis(5000)) {
+            match rx.recv_timeout(Duration::from_millis(60000)) {
                 Ok(_) => {
                     warn!("keepalive: destructor hit, exiting");
                     break;
@@ -224,10 +224,10 @@ impl BFClient {
         trace!("req: dropped token read lock");
 
         loop {
-            info!("req: attempting request");
+            debug!("req: attempting request");
             match self.req_internal(&token, &req) {
                 Ok(resp) => {
-                    info!("req: request successful");
+                    debug!("req: request successful");
                     break Ok(resp);
                 }
                 Err(_) => {
@@ -237,7 +237,7 @@ impl BFClient {
                     // caller
 
                     info!("req: login required");
-                    debug!("req: taking token write lock");
+                    trace!("req: taking token write lock");
                     let mut token_lock = self.session_token.write().unwrap();
 
                     if token != *token_lock {
@@ -247,7 +247,7 @@ impl BFClient {
                     }
 
                     token = loop {
-                        info!("login: sending request");
+                        debug!("login: sending request");
                         match self.login() {
                             Ok(token) => {
                                 info!("login: success");
@@ -257,7 +257,7 @@ impl BFClient {
                                 warn!("login: failed {:?}", e);
 
                                 // TODO: exponential backoff
-                                warn!("login: sleeping for 5000ms");
+                                debug!("login: sleeping for 5000ms");
                                 thread::sleep(Duration::from_millis(5000));
                             }
                         }
@@ -265,7 +265,7 @@ impl BFClient {
 
                     *token_lock = token.clone();
                     drop(token_lock); // explicit drop for logging purposes
-                    debug!("req: dropped token write lock");
+                    trace!("req: dropped token write lock");
                 }
             }
         }
