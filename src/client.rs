@@ -19,7 +19,9 @@ use crate::result::{Error, Result};
 use reqwest::{Client, Identity};
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
-use std::sync::{Arc, RwLock};
+use std::sync::{mpsc, Arc, RwLock};
+use std::thread;
+use std::time::Duration;
 
 #[derive(Debug, Serialize)]
 struct LoginRequestForm {
@@ -75,16 +77,26 @@ impl BFCredentials {
 /// Betfair APING.
 pub struct BFClient {
     client: reqwest::Client,
-    session_token: Arc<RwLock<Option<String>>>,
+    destructor: mpsc::SyncSender<()>,
+    session_token: RwLock<Option<String>>,
     creds: BFCredentials,
     proxy_uri: Option<String>,
+}
+
+impl Drop for BFClient {
+    fn drop(&mut self) {
+        info!("dropping BFClient!");
+        self.destructor
+            .send(())
+            .expect("unable to signal keepalive thread");
+    }
 }
 
 impl BFClient {
     pub fn new(
         creds: BFCredentials,
         proxy_uri: Option<String>,
-    ) -> Result<Self> {
+    ) -> Result<Arc<Self>> {
         let client: reqwest::Client = match &proxy_uri {
             Some(uri) => {
                 let proxy = reqwest::Proxy::all(uri)?;
@@ -92,12 +104,30 @@ impl BFClient {
             }
             None => reqwest::Client::new(),
         };
-        Ok(BFClient {
+
+        let session_token = RwLock::new(None);
+        let (destructor, rx) = mpsc::sync_channel(0); // rendezvous channel
+        thread::spawn(move || {
+            info!("New keepalive thread spawned for BFClient");
+            loop {
+                match rx.recv_timeout(Duration::from_millis(1000)) {
+                    Ok(_) => {
+                        warn!("got destructor signal, thread finishing");
+                        break;
+                    }
+                    Err(_) => {
+                        info!("thread still running");
+                    }
+                }
+            }
+        });
+        Ok(Arc::new(BFClient {
             client,
-            session_token: Arc::new(RwLock::new(None)),
+            destructor,
+            session_token,
             creds,
             proxy_uri,
-        })
+        }))
     }
 
     // TODO keepalive
@@ -146,6 +176,8 @@ impl BFClient {
             Some(token) => {
                 const JSONRPC_URI: &str =
                     "https://api.betfair.com/exchange/betting/json-rpc/v1";
+
+                trace!("Performing a query to the JSON-RPC api");
 
                 Ok(self
                     .client
