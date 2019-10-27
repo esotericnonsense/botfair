@@ -19,6 +19,7 @@ pub enum Error {
     Io(std::io::Error),
     Reqwest(reqwest::Error),
     BFLoginFailure(String),
+    BFKeepAliveFailure(crate::client::KeepAliveError), // could be an enum
     General(String),
     Other,
 }
