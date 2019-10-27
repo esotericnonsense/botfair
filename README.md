@@ -1,6 +1,8 @@
 # botfair
 
 Rust bindings for the Betfair SportsAPING.
+Automatic login.
+Coming soon: automatic keep-alive.
 
 https://git.esotericnonsense.com/pub/botfair.git - main repository
 https://github.com/esotericnonsense/botfair.git - github repo, for PRs etc

@@ -17,6 +17,8 @@
 //! # botfair
 //!
 //! The `botfair` crate provides Rust bindings for the Betfair SportsAPING.
+//! Automatic login.
+//! Coming soon: automatic keep-alive.
 //!
 //! ## Example
 //! ```
