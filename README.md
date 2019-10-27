@@ -1,4 +1,4 @@
-# `botfair`
+# `botfair` 0.3.0
 
 The `botfair` crate provides Rust bindings for the Betfair SportsAPING.
 
