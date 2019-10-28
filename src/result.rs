@@ -24,6 +24,9 @@ pub enum Error {
     BFLoginFailure(String),
     BFKeepAliveFailure(crate::client::KeepAliveError), // could be an enum
     General(String),
+    JSONRPCError,
+    SessionTokenNotPresent,
+    SessionTokenInvalid,
     Other,
 }
 

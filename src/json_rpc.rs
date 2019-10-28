@@ -40,7 +40,7 @@ impl<T> RpcRequest<T> {
 
 #[derive(Debug, Deserialize)]
 pub struct RpcError {
-    code: i32,
+    code: i32, // TODO are these ever meaningful?
     message: errorCode,
 }
 
@@ -48,7 +48,6 @@ pub struct RpcError {
 pub struct RpcResponse<T> {
     jsonrpc: String,
     result: Option<T>,
-    // TODO custom serde deserializer?
     error: Option<RpcError>,
     id: String,
 }
@@ -56,15 +55,14 @@ pub struct RpcResponse<T> {
 impl<T> RpcResponse<T> {
     // TODO: rustic way to perform this?
     pub fn into_inner(self) -> Result<T> {
-        // TODO check these? do we care?
-        let _ = self.jsonrpc;
-        let _ = self.id;
-        match self.error {
-            Some(rpc_error) => {
-                // parse out the error. ANGX-0001
+        let _ = self.jsonrpc; // This should always be "2.0".
+        let _ = self.id; // We could check this against the request.
+        match (self.error, self.result) {
+            (Some(rpc_error), _) => {
                 Err(Error::APINGException(rpc_error.message))
             }
-            None => Ok(self.result.expect("unhandled API exception")),
+            (None, Some(result)) => Ok(result),
+            (None, None) => Err(Error::JSONRPCError),
         }
     }
 }

@@ -14,6 +14,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with botfair.  If not, see <http://www.gnu.org/licenses/>.
 
+use crate::generated_exceptions::errorCode;
 use crate::json_rpc::{RpcRequest, RpcResponse};
 use crate::result::{Error, Result};
 use reqwest::{Client, Identity};
@@ -187,26 +188,76 @@ impl BFClient {
         &self,
         maybe_token: &Option<String>,
         rpc_request: &RpcRequest<T1>,
-    ) -> Result<RpcResponse<T2>> {
-        match maybe_token {
-            None => Err(Error::General(
-                "req_internal: must login first".to_owned(),
-            )),
-            Some(token) => {
-                const JSONRPC_URI: &str =
-                    "https://api.betfair.com/exchange/betting/json-rpc/v1";
+    ) -> Result<T2> {
+        let token = match maybe_token {
+            Some(x) => x,
+            None => return Err(Error::SessionTokenNotPresent),
+        };
 
-                trace!("Performing a query to the JSON-RPC api");
+        const JSONRPC_URI: &str =
+            "https://api.betfair.com/exchange/betting/json-rpc/v1";
 
-                Ok(self
-                    .client
-                    .post(JSONRPC_URI)
-                    .header("X-Application", self.creds.app_key())
-                    .header("X-Authentication", token)
-                    .json(&rpc_request)
-                    .send()?
-                    .json()
-                    .unwrap())
+        trace!("Performing a query to the JSON-RPC api");
+
+        // Attempt request
+        let mut http_response: reqwest::Response = {
+            let maybe_http_response = self
+                .client
+                .post(JSONRPC_URI)
+                .header("X-Application", self.creds.app_key())
+                .header("X-Authentication", token)
+                .json(&rpc_request)
+                .send();
+
+            match maybe_http_response {
+                Ok(x) => x,
+                Err(e) => {
+                    match e
+                        .get_ref()
+                        .and_then(|f| f.downcast_ref::<http::Error>())
+                        .and_then(|g| {
+                            Some(g.is::<http::header::InvalidHeaderValue>())
+                        }) {
+                        Some(true) => {
+                            // This error occurs if you pass a random
+                            //   string in the authentication header.
+                            debug!("req_internal: InvalidHeaderValue");
+                            return Err(Error::SessionTokenInvalid);
+                        }
+                        _ => {
+                            error!("req_internal: request error {}", e);
+                            return Err(Error::Reqwest(e));
+                        }
+                    }
+                }
+            }
+        };
+
+        // Attempt to deserialize
+        let rpc_response: RpcResponse<T2> = match http_response.json() {
+            Ok(x) => x,
+            Err(e) => {
+                error!("req_internal: deserialization error {}", e);
+                return Err(Error::Reqwest(e));
+            }
+        };
+
+        match rpc_response.into_inner() {
+            Ok(x) => Ok(x),
+            Err(Error::APINGException(code)) => match code {
+                errorCode::INVALID_SESSION_INFORMATION
+                | errorCode::NO_SESSION => Err(Error::SessionTokenInvalid),
+                e => {
+                    error!("req_internal: API error {:?}", e);
+                    Err(Error::APINGException(e))
+                }
+            },
+            Err(Error::JSONRPCError) => {
+                error!("req_internal: no result or error?");
+                Err(Error::JSONRPCError)
+            }
+            Err(_) => {
+                unreachable!();
             }
         }
     }
@@ -214,7 +265,7 @@ impl BFClient {
     pub(super) fn req<T1: Serialize, T2: DeserializeOwned>(
         &self,
         req: RpcRequest<T1>,
-    ) -> Result<RpcResponse<T2>> {
+    ) -> Result<T2> {
         // Initially acquire the token via a read lock
 
         trace!("req: taking token read lock");
@@ -230,12 +281,8 @@ impl BFClient {
                     debug!("req: request successful");
                     break Ok(resp);
                 }
-                Err(_) => {
-                    // Assume the only error possible is an auth error
-                    // TODO: check if it's an exception, auth error,
-                    // etc; an exception should just be propagated to the
-                    // caller
-
+                Err(Error::SessionTokenNotPresent)
+                | Err(Error::SessionTokenInvalid) => {
                     info!("req: login required");
                     trace!("req: taking token write lock");
                     let mut token_lock = self.session_token.write().unwrap();
@@ -266,6 +313,10 @@ impl BFClient {
                     *token_lock = token.clone();
                     drop(token_lock); // explicit drop for logging purposes
                     trace!("req: dropped token write lock");
+                }
+                Err(e) => {
+                    error!("req: unhandled error {:?}", e);
+                    break Err(e);
                 }
             }
         }
