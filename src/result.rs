@@ -18,6 +18,7 @@
 pub enum Error {
     Io(std::io::Error),
     Reqwest(reqwest::Error),
+    APINGException(String), // TODO generated_exceptions.rs
     BFLoginFailure(String),
     BFKeepAliveFailure(crate::client::KeepAliveError), // could be an enum
     General(String),

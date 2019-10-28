@@ -649,7 +649,7 @@ let rpc_request: RpcRequest<{struct_name}> = RpcRequest::new(
     \"SportsAPING/v1.0/{operation.name}\".to_owned(),
     req
 );
-self.req(rpc_request).map(|x| x.into_inner())
+self.req(rpc_request).map(|x| x.into_inner())?
 """
         else:
             # TODO this smells, repetition
@@ -658,7 +658,7 @@ let rpc_request: RpcRequest<()> = RpcRequest::new(
     \"SportsAPING/v1.0/{operation.name}\".to_owned(),
     ()
 );
-self.req(rpc_request).map(|x| x.into_inner())
+self.req(rpc_request).map(|x| x.into_inner())?
 """
 
         function_signature = f"""fn {operation.name}({formatted_params_args}) ->

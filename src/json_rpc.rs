@@ -14,6 +14,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with botfair.  If not, see <http://www.gnu.org/licenses/>.
 
+use crate::result::{Error, Result};
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize)]
@@ -39,7 +40,6 @@ impl<T> RpcRequest<T> {
 #[derive(Debug, Deserialize)]
 pub struct RpcError {
     code: i32,
-    // TODO: parse these. e.g. ANGX-0003 is exception 3
     message: String,
 }
 
@@ -47,15 +47,23 @@ pub struct RpcError {
 pub struct RpcResponse<T> {
     jsonrpc: String,
     result: Option<T>,
+    // TODO custom serde deserializer?
     error: Option<RpcError>,
     id: String,
 }
 
 impl<T> RpcResponse<T> {
-    pub fn into_inner(self) -> T {
+    // TODO: rustic way to perform this?
+    pub fn into_inner(self) -> Result<T> {
         // TODO check these? do we care?
         let _ = self.jsonrpc;
         let _ = self.id;
-        self.result.expect("unhandled API exception")
+        match self.error {
+            Some(rpc_error) => {
+                // parse out the error. ANGX-0001
+                Err(Error::APINGException(rpc_error.message))
+            }
+            None => Ok(self.result.expect("unhandled API exception")),
+        }
     }
 }
