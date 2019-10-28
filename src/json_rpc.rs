@@ -36,10 +36,18 @@ impl<T> RpcRequest<T> {
     }
 }
 
+#[derive(Debug, Deserialize)]
+pub struct RpcError {
+    code: i32,
+    // TODO: parse these. e.g. ANGX-0003 is exception 3
+    message: String,
+}
+
 #[derive(Deserialize)]
 pub struct RpcResponse<T> {
     jsonrpc: String,
-    result: T,
+    result: Option<T>,
+    error: Option<RpcError>,
     id: String,
 }
 
@@ -48,6 +56,6 @@ impl<T> RpcResponse<T> {
         // TODO check these? do we care?
         let _ = self.jsonrpc;
         let _ = self.id;
-        self.result
+        self.result.expect("unhandled API exception")
     }
 }
