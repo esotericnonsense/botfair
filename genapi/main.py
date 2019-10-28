@@ -514,8 +514,7 @@ def python_type_to_rust_type(_type: str, mandatory: bool = True) -> str:
 
 def generate_rust_simple_types(simple_types: List[SimpleType]) -> List[str]:
     """
-    Return API bindings for the operations.
-    For the time being the function bodies are just empty.
+    Return API bindings for the simpleTypes.
     """
 
     types: List[str] = []
@@ -550,8 +549,7 @@ pub enum {simple_type.name} {{
 
 def generate_rust_data_types(data_types: List[DataType]) -> List[str]:
     """
-    Return API bindings for the operations.
-    For the time being the function bodies are just empty.
+    Return API bindings for the dataTypes.
     """
 
     types: List[str] = []
@@ -598,7 +596,6 @@ class RustOperations:
 def generate_rust_operations(operations: List[Operation]) -> RustOperations:
     """
     Return API bindings for the operations.
-    For the time being the function bodies are just empty.
     """
 
     request_structs: List[str] = []
@@ -680,8 +677,7 @@ def generate_rust_exceptions(
     exception_types: List[ExceptionType]
 ) -> List[str]:
     """
-    Return API bindings for the operations.
-    For the time being the function bodies are just empty.
+    Return API bindings for the exceptionTypes.
     """
 
     #        def format_param(param: Param):
