@@ -77,6 +77,7 @@ class ExceptionType(DataClassJsonMixin):
     """An exception type as per the BF API"""
 
     name: str
+    description: Optional[str]
     prefix: str
     params: List[Param]
 
@@ -398,7 +399,9 @@ def parse_exceptionType(el: Element) -> ExceptionType:
 
         raise NotImplementedError(child.tag)
 
-    return ExceptionType(name=name, prefix=prefix, params=params)
+    return ExceptionType(
+        name=name, description=description, prefix=prefix, params=params
+    )
 
 
 def parse_simpleType(el: Element) -> SimpleType:
@@ -673,9 +676,63 @@ pub {function_signature} {{ {function_interior} }}"""
     return RustOperations(request_structs=request_structs, functions=functions)
 
 
+def generate_rust_exceptions(
+    exception_types: List[ExceptionType]
+) -> List[str]:
+    """
+    Return API bindings for the operations.
+    For the time being the function bodies are just empty.
+    """
+
+    #        def format_param(param: Param):
+    #            return f"""#[serde(rename = "{exception_type.prefix}-{(param._id):04d}")]
+    # {aping_name_to_rust_name(param.name)}"""
+
+    exceptions: List[str] = []
+    for exception_type in exception_types:  # type: ExceptionType
+        # TODO
+        # if exception_type.description is not None:
+        #     exceptions.append(f"/// {exception_type.description}")
+
+        for param in exception_type.params:
+            if param.name != "errorCode":
+                # TODO do not ignore
+                continue
+
+            if param.values is None:
+                rust_type: str = python_type_to_rust_type(param._type)
+                exceptions.append(f"pub type {param.name} = {rust_type};")
+                continue
+            # All of the enums are stringly typed, this is a sanity check
+            assert param._type == "string"
+
+            variants: List[str] = []
+            for value in param.values:
+                subvariant: List[str] = []
+                if value.description is not None:
+                    subvariant.append(f"/// {value.description}")
+                subvariant.append(
+                    f"""#[serde(rename = "{exception_type.prefix}-{(value._id):04d}")]
+{value.name}"""
+                )
+                variants.append("\n".join(subvariant))
+
+            variants_str = ",\n".join(variants)
+            exceptions.append(
+                f"""#[derive(Debug, Deserialize)]
+    pub enum {param.name} {{
+    {variants_str}
+    }}"""
+            )
+            continue
+
+    return exceptions
+
+
 def main() -> None:
     tree = parse("SportsAPING.patched.xml")
     aping: APING = parse_aping(tree.getroot())
+
     # print(aping.to_json())
 
     header = [
@@ -696,6 +753,9 @@ def main() -> None:
         aping.simple_types
     )
     rust_data_types: List[str] = generate_rust_data_types(aping.data_types)
+    rust_exceptions: List[str] = generate_rust_exceptions(
+        aping.exception_types
+    )
     with open("../src/generated_types.rs", "w") as f:
         for l in header:
             f.write(l + "\n")
@@ -744,6 +804,19 @@ def main() -> None:
         for l in a:
             f.write(l + "\n")
         for l in rust_operations.request_structs:
+            f.write(l + "\n")
+
+    with open("../src/generated_exceptions.rs", "w") as f:
+        for l in header:
+            f.write(l + "\n")
+        a = [
+            "#![allow(non_camel_case_types)]",
+            "#![allow(non_snake_case)]",
+            "use serde::Deserialize;",
+        ]
+        for l in a:
+            f.write(l + "\n")
+        for l in rust_exceptions:
             f.write(l + "\n")
 
 

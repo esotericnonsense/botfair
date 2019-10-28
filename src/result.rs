@@ -14,11 +14,13 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with botfair.  If not, see <http://www.gnu.org/licenses/>.
 
+use crate::generated_exceptions::errorCode;
+
 #[derive(Debug)]
 pub enum Error {
     Io(std::io::Error),
     Reqwest(reqwest::Error),
-    APINGException(String), // TODO generated_exceptions.rs
+    APINGException(errorCode),
     BFLoginFailure(String),
     BFKeepAliveFailure(crate::client::KeepAliveError), // could be an enum
     General(String),

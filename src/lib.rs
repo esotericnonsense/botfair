@@ -95,6 +95,7 @@
 extern crate log;
 
 pub mod client;
+pub mod generated_exceptions;
 mod generated_methods;
 mod generated_requests;
 pub mod generated_types;

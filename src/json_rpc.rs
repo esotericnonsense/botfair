@@ -14,6 +14,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with botfair.  If not, see <http://www.gnu.org/licenses/>.
 
+use crate::generated_exceptions::errorCode;
 use crate::result::{Error, Result};
 use serde::{Deserialize, Serialize};
 
@@ -40,7 +41,7 @@ impl<T> RpcRequest<T> {
 #[derive(Debug, Deserialize)]
 pub struct RpcError {
     code: i32,
-    message: String,
+    message: errorCode,
 }
 
 #[derive(Deserialize)]
