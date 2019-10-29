@@ -75,7 +75,10 @@ impl BFCredentials {
 }
 
 /// A thread-safe client with automatic login implementing all methods of the
-/// Betfair APING.
+/// Betfair SportsAPING.
+///
+/// [`BFClient`](BFClient) implements Sync and so can safely be wrapped in an
+/// Arc for multithreaded use with the same session token.
 pub struct BFClient {
     client: reqwest::Client,
     destructor: mpsc::SyncSender<()>,

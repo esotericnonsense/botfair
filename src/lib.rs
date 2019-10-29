@@ -14,19 +14,23 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with botfair.  If not, see <http://www.gnu.org/licenses/>.
 
-//! # botfair
+//! # `botfair` 0.3.99
 //!
 //! The `botfair` crate provides Rust bindings for the Betfair SportsAPING.
 //! Login and keep-alive are handled automatically by the BFClient.
 //!
-//! The BFClient class implements Sync and so can safely be wrapped in an Arc
-//! for multithreaded use with the same session token.
+//! See the [`BFClient`](BFClient) documentation for methods.
+//!
+//! [`BFClient`](BFClient) implements Sync and so can safely be wrapped in an
+//! Arc for multithreaded use with the same session token.
 //!
 //! ## Warranty
 //!
-//! > This program is distributed in the hope that it will be useful,
-//! >    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//! >    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+//! ```text
+//! This program is distributed in the hope that it will be useful,
+//!    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//!    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+//! ```
 //!
 //! Paid support, consulting, and contracting services are available.
 //!

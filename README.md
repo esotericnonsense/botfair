@@ -1,12 +1,12 @@
-# `botfair` 0.3.0
+# `botfair` 0.3.99
 
 The `botfair` crate provides Rust bindings for the Betfair SportsAPING.
 
 Login and keep-alive are handled automatically by the BFClient.
 
-https://git.esotericnonsense.com/pub/botfair.git - main repository
+<https://git.esotericnonsense.com/pub/botfair.git> - main repository
 
-https://github.com/esotericnonsense/botfair.git - github repo, for PRs etc
+<https://github.com/esotericnonsense/botfair.git> - github repo, for PRs etc
 
 ## Warranty
 
