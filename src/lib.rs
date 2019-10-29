@@ -34,6 +34,9 @@
 //!
 //! Paid support, consulting, and contracting services are available.
 //!
+//! For more information, contact Daniel Edgecumbe at
+//! <botfair@esotericnonsense.com>.
+//!
 //! ## Example
 //! Note that `botfair` requires your certificate to be in `pfx` format.
 //! In order to achieve this given a key and crt file, you can use the
@@ -94,6 +97,30 @@
 //!     Ok(())
 //! }
 //! ```
+//!
+//! ## Generating the bindings
+//!
+//! If you just want to use the crate, you can skip this section as the
+//! bindings are already present.
+//!
+//! To re-generate the bindings from the Betfair XML documentation, you will
+//! need to `cd genapi; ./main.sh` which fetches the documentation from
+//! Betfair's servers and runs a python script on them to generate the Rust
+//! bindings.
+//!
+//! ## License
+//!
+//! For open source software, `botfair` is subject to the GNU AGPLv3, contained
+//! in the document LICENSE.AGPLv3 which should be distributed with the
+//! software.
+//!
+//! This means that you need to licence your software under the same terms. In
+//! particular, this means that software that makes use of this library must
+//! make available its' source code to the users of said software, whether that
+//! software is interacted with over a network or by the end users directly.
+//!
+//! For closed source software, exceptions may be made at the discretion of the
+//! author.
 
 #[macro_use]
 extern crate log;
