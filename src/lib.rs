@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with botfair.  If not, see <http://www.gnu.org/licenses/>.
 
-//! # `botfair` 0.3.99
+//! # `botfair` 0.3.1
 //!
 //! The `botfair` crate provides Rust bindings for the Betfair SportsAPING.
 //! Login and keep-alive are handled automatically by the BFClient.
