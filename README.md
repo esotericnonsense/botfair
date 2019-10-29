@@ -2,7 +2,7 @@
 
 The `botfair` crate provides Rust bindings for the Betfair SportsAPING.
 
-Documentation for the crate may be found at [docs.rs](https://docs.rs/botfair),
+Documentation for the crate may be found at [https://docs.rs](https://docs.rs/botfair),
 or alternatively in the file [lib.rs](src/lib.rs).
 
 Main git repository: <https://git.esotericnonsense.com/pub/botfair.git>
